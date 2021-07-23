@@ -11,7 +11,7 @@ const { db } = require('./db/dbconfig')
 
 // Actions
 const { getParams } = require('./utilities')
-const { HandlePurchase, HandleSell } = require('./actions/transactions')
+const { HandlePurchase, HandleSell, HandleDeposit, HandleWithdraw } = require('./actions/transactions')
 const { GetBalance } = require('./actions/userdata')
 
 const client = new SteamUser()
@@ -60,21 +60,23 @@ client.on('friendMessage', async function (steamID, message) {
             break
 
         case message.includes('!buy'):
-            res = HandlePurchase(steamID, getParams(message))
+            res = await HandlePurchase(steamID, getParams(message))
             client.chatMessage(steamID, res.msg)
             break
 
         case message.includes('!sell'):
-            res = HandleSell(steamID, getParams(message))
+            res = await HandleSell(steamID, getParams(message))
             client.chatMessage(steamID, res.msg)
             break
 
         case message.includes('!deposit'):
-            client.chatMessage(steamID, answers.deposit)
+            res = await HandleDeposit(steamID, getParams(message))
+            client.chatMessage(steamID, res.msg)
             break
 
         case message.includes('!withdraw'):
-            client.chatMessage(steamID, answers.withdraw)
+            res = await HandleWithdraw(steamID, getParams(message))
+            client.chatMessage(steamID, res.msg)
             break
 
         case message.includes('!prices'):

@@ -11,7 +11,5 @@ module.exports.GetBalance = async function GetBalance(steamID) {
         response += index + 1 + ' => ' + elem.designation + ' ' + elem.code + ' : ' + elem.balance + '\n'
     })
 
-    console.log(response)
-
     return response
 }
