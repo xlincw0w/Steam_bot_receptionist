@@ -12,6 +12,7 @@ const { db } = require('./db/dbconfig')
 // Actions
 const { getParams } = require('./utilities')
 const { HandlePurchase, HandleSell } = require('./actions/transactions')
+const { GetBalance } = require('./actions/userdata')
 
 const client = new SteamUser()
 const community = new SteamCommunity()
@@ -38,13 +39,12 @@ client.logOn(logOnOptions)
 
 client.on('loggedOn', () => {
     console.log('Hachi bot logged in')
-    console.log()
     client.setPersona(SteamUser.EPersonaState.Online)
 })
 
 client.on('friendsList', () => {})
 
-client.on('friendMessage', function (steamID, message) {
+client.on('friendMessage', async function (steamID, message) {
     let res = ''
     switch (true) {
         case message.includes('!commands'):
@@ -90,7 +90,8 @@ client.on('friendMessage', function (steamID, message) {
             break
 
         case message.includes('!balance'):
-            client.chatMessage(steamID, answers.balance)
+            res = await GetBalance(steamID)
+            client.chatMessage(steamID, res)
             break
 
         case message.includes('!stock'):
@@ -102,24 +103,40 @@ client.on('friendMessage', function (steamID, message) {
     }
 })
 
-client.on('friendRelationship', (steam_id, relationship) => {
+client.on('friendRelationship', async (steam_id, relationship) => {
     console.log('<Friends request from> - ', steam_id.accountid)
     if (relationship === 2) {
-        client.addFriend(steam_id)
-        client.chatMessage(steam_id, answers.commands_shortened)
+        let fetch_curr = await db('currencies').select('*')
 
-        db('clients')
-            .insert({
-                steam_id: steam_id.accountid,
-                added_date: moment().format('YYYY-MM-DD'),
-                balance: 0,
+        console.log(fetch_curr[0])
+
+        try {
+            db.transaction(async (trx) => {
+                await db('clients')
+                    .insert({
+                        steam_id: steam_id.accountid,
+                        added_date: moment().format('YYYY-MM-DD'),
+                    })
+                    .transacting(trx)
+
+                await Promise.all(
+                    fetch_curr.map(async (elem) => {
+                        await db('balances')
+                            .insert({
+                                id_client: steam_id.accountid,
+                                id_currency: elem.id_currency,
+                                balance: 0,
+                            })
+                            .transacting(trx)
+                    })
+                )
             })
-            .then((resp) => {
-                console.log(resp)
-            })
-            .catch((err) => {
-                console.log(err)
-            })
+
+            client.addFriend(steam_id)
+            client.chatMessage(steam_id, answers.commands_shortened)
+        } catch (err) {
+            console.log(err)
+        }
     }
 })
 

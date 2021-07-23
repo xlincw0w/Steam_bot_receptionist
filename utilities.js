@@ -2,7 +2,8 @@ module.exports = {
     getParams: function getParams(message) {
         return message.split(' ')
     },
-    currencies: ['BTC', 'ETH', 'DOGE', 'ADA', 'DOT'],
+    // currencies: ['BTC', 'ETH', 'DOGE', 'ADA', 'DOT'],
+    currencies: ['BTC', 'ETH', 'DOGE'],
     constants: {
         // regex
         username_rg: /^[A-Za-z]+[A-Za-z0-9 ]*$/,
