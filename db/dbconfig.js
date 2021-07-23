@@ -8,7 +8,7 @@ const db = knex({
     client: 'mysql',
     connection: {
         host: cnObj.hostname,
-        database: cnObj.path?.[0],
+        database: cnObj.path[0],
         user: cnObj.user,
         password: cnObj.password,
         ssl: { rejectUnauthorized: false },
