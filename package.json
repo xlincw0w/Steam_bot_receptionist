@@ -1,0 +1,29 @@
+{
+  "name": "steam_bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon script.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xlincw0w/Steam_bot.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/xlincw0w/Steam_bot/issues"
+  },
+  "homepage": "https://github.com/xlincw0w/Steam_bot#readme",
+  "dependencies": {
+    "steam-totp": "^2.1.1",
+    "steam-tradeoffer-manager": "^2.10.3",
+    "steam-user": "^4.19.12",
+    "steamcommunity": "^3.43.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.12"
+  }
+}
