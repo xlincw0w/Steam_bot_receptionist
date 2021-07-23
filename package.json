@@ -18,6 +18,8 @@
   },
   "homepage": "https://github.com/xlincw0w/Steam_bot#readme",
   "dependencies": {
+    "axios": "^0.21.1",
+    "connection-string": "^4.3.4",
     "express": "^4.17.1",
     "knex": "^0.95.7",
     "lodash": "^4.17.21",
@@ -29,6 +31,7 @@
     "steamcommunity": "^3.43.1"
   },
   "devDependencies": {
+    "dotenv": "^10.0.0",
     "nodemon": "^2.0.12"
   }
 }

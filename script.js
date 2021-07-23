@@ -4,7 +4,8 @@ const SteamCommunity = require('steamcommunity')
 const TradeOfferManager = require('steam-tradeoffer-manager')
 const moment = require('moment')
 
-const config = require('./config')
+require('dotenv').config()
+
 const answers = require('./messages')
 
 const { db } = require('./db/dbconfig')
@@ -23,9 +24,9 @@ const manager = new TradeOfferManager({
 })
 
 const logOnOptions = {
-    accountName: config.accountName,
-    password: config.password,
-    twoFactorCode: SteamTotp.generateAuthCode(config.sharedSecret),
+    accountName: process.env.ACCOUNT_NAME,
+    password: process.env.PASSWORD,
+    twoFactorCode: SteamTotp.generateAuthCode(process.env.SHARED_SECRET),
 }
 
 // client.on('webSession', (sessionid, cookies) => {

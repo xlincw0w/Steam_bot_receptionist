@@ -1,10 +1,17 @@
-const db = require('knex')({
+require('dotenv').config()
+const knex = require('knex')
+
+const { ConnectionString } = require('connection-string')
+const cnObj = new ConnectionString(process.env.CLEARDB_DATABASE_URL)
+
+const db = knex({
     client: 'mysql',
     connection: {
-        host: 'eu-cdbr-west-01.cleardb.com',
-        user: 'b779cdbbef48d8',
-        password: '8d03c848',
-        database: 'heroku_97681a3fa4122e3',
+        host: cnObj.hostname,
+        database: cnObj.path?.[0],
+        user: cnObj.user,
+        password: cnObj.password,
+        // ssl: { rejectUnauthorized: false },
     },
 })
 
