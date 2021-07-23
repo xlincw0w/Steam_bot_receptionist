@@ -166,4 +166,20 @@ function sendRandomItem() {
     })
 }
 
+// API
+const express = require('express')
+const path = require('path')
+const app = express()
+const PORT = process.env.PORT || 3000
+
+app.get('/userTokenFetch', function (req, res) {
+    const { code, state } = req.query
+
+    console.log(req.query)
+})
+
+app.listen(PORT, function () {
+    console.log('Server listenning on port ' + PORT)
+})
+
 module.exports.client = client

@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/xlincw0w/Steam_bot#readme",
   "dependencies": {
+    "express": "^4.17.1",
     "knex": "^0.95.7",
     "lodash": "^4.17.21",
     "moment": "^2.29.1",
