@@ -18,6 +18,9 @@
   },
   "homepage": "https://github.com/xlincw0w/Steam_bot#readme",
   "dependencies": {
+    "knex": "^0.95.7",
+    "moment": "^2.29.1",
+    "mysql": "^2.18.1",
     "steam-totp": "^2.1.1",
     "steam-tradeoffer-manager": "^2.10.3",
     "steam-user": "^4.19.12",
