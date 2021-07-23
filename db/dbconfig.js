@@ -11,7 +11,7 @@ const db = knex({
         database: cnObj.path?.[0],
         user: cnObj.user,
         password: cnObj.password,
-        // ssl: { rejectUnauthorized: false },
+        ssl: { rejectUnauthorized: false },
     },
 })
 
