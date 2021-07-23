@@ -5,7 +5,8 @@ const TradeOfferManager = require("steam-tradeoffer-manager");
 const moment = require("moment");
 const axios = require("axios");
 
-const config = require("./config");
+require("dotenv").config();
+
 const answers = require("./messages");
 
 const { db } = require("./db/dbconfig");
@@ -29,9 +30,9 @@ const manager = new TradeOfferManager({
 });
 
 const logOnOptions = {
-  accountName: config.accountName,
-  password: config.password,
-  twoFactorCode: SteamTotp.generateAuthCode(config.sharedSecret),
+  accountName: process.env.ACCOUNT_NAME,
+  password: process.env.PASSWORD,
+  twoFactorCode: SteamTotp.generateAuthCode(process.env.SHARED_SECRET),
 };
 
 // client.on('webSession', (sessionid, cookies) => {
@@ -190,9 +191,9 @@ app.get("/userTokenFetch", function (req, res) {
     .post("https://api.coinbase.com/oauth/token", {
       grant_type: "authorization_code",
       code: code,
-      client_id: config.client_id,
-      client_secret: config.client_secret,
-      redirect_uri: config.redirect_uri,
+      client_id: process.env.CLIENT_ID,
+      client_secret: process.env.CLIENT_SECRET,
+      redirect_uri: process.env.REDIRECT_URI,
     })
     .then((res) => {
       console.log(res.data.access_token);
