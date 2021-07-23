@@ -14,6 +14,7 @@ const { db } = require('./db/dbconfig')
 const { getParams } = require('./utilities')
 const { HandlePurchase, HandleSell, HandleDeposit, HandleWithdraw } = require('./actions/transactions')
 const { GetBalance } = require('./actions/userdata')
+const { GetPrices, GetFees, GetMinWithdrawal, GetOwner, GetBuyCost, GetSellCost } = require('./actions/fetchdata')
 
 const client = new SteamUser()
 const community = new SteamCommunity()
@@ -50,60 +51,79 @@ client.on('friendsList', () => {})
 client.on('friendMessage', async function (steamID, message) {
     let res = ''
     switch (true) {
-        case message.includes('!commands'):
+        case message.split(' ')[0] === '!commands':
             client.chatMessage(steamID, answers.commands_shortened)
             break
 
-        case message.includes('!how2buy'):
+        case message.split(' ')[0] === '!how2buy':
             client.chatMessage(steamID, answers.how2buy)
             break
 
-        case message.includes('!how2sell'):
+        case message.split(' ')[0] === '!how2sell':
             client.chatMessage(steamID, answers.how2sell)
             break
 
-        case message.includes('!buy'):
+        case message.split(' ')[0] === '!buy':
             res = await HandlePurchase(steamID, getParams(message))
             client.chatMessage(steamID, res.msg)
             break
 
-        case message.includes('!sell'):
+        case message.split(' ')[0] === '!sell':
             res = await HandleSell(steamID, getParams(message))
             client.chatMessage(steamID, res.msg)
             break
 
-        case message.includes('!deposit'):
+        case message.split(' ')[0] === '!deposit':
             res = await HandleDeposit(steamID, getParams(message))
             client.chatMessage(steamID, res.msg)
             break
 
-        case message.includes('!withdraw'):
+        case message.split(' ')[0] === '!withdraw':
             res = await HandleWithdraw(steamID, getParams(message))
             client.chatMessage(steamID, res.msg)
             break
 
-        case message.includes('!prices'):
-            client.chatMessage(steamID, answers.prices)
+        case message.split(' ')[0] === '!prices':
+            res = await GetPrices()
+            client.chatMessage(steamID, res)
             break
 
-        case message.includes('!fees'):
-            client.chatMessage(steamID, answers.fees)
+        case message.split(' ')[0] === '!fees':
+            res = await GetFees()
+            client.chatMessage(steamID, res)
             break
 
-        case message.includes('!mins'):
-            client.chatMessage(steamID, answers.mins)
+        case message.split(' ')[0] === '!mins':
+            res = await GetMinWithdrawal()
+            client.chatMessage(steamID, res)
             break
 
-        case message.includes('!balance'):
+        case message.split(' ')[0] === '!balance':
             res = await GetBalance(steamID)
             client.chatMessage(steamID, res)
             break
 
-        case message.includes('!stock'):
+        case message.split(' ')[0] === '!stock':
             client.chatMessage(steamID, answers.stock)
             break
-        case message.includes('!stats'):
+
+        case message.split(' ')[0] === '!stats':
             client.chatMessage(steamID, answers.stats)
+            break
+
+        case message.split(' ')[0] === '!buycost':
+            res = await GetBuyCost(getParams(message))
+            client.chatMessage(steamID, res)
+            break
+
+        case message.split(' ')[0] === '!sellcost':
+            res = await GetSellCost(getParams(message))
+            client.chatMessage(steamID, res)
+            break
+
+        case message.split(' ')[0] === '!owner':
+            res = await GetOwner()
+            client.chatMessage(steamID, res)
             break
     }
 })
@@ -112,8 +132,6 @@ client.on('friendRelationship', async (steam_id, relationship) => {
     console.log('<Friends request from> - ', steam_id.accountid)
     if (relationship === 2) {
         let fetch_curr = await db('currencies').select('*')
-
-        console.log(fetch_curr[0])
 
         try {
             db.transaction(async (trx) => {
@@ -169,7 +187,6 @@ function sendRandomItem() {
 
 // API
 const express = require('express')
-const path = require('path')
 const app = express()
 const PORT = process.env.PORT || 3000
 
