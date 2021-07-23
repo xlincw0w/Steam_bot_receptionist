@@ -25,7 +25,7 @@ const manager = new TradeOfferManager({
 const logOnOptions = {
     accountName: config.accountName,
     password: config.password,
-    // twoFactorCode: SteamTotp.generateAuthCode(config.sharedSecret),
+    twoFactorCode: SteamTotp.generateAuthCode(config.sharedSecret),
 }
 
 // client.on('webSession', (sessionid, cookies) => {
@@ -39,6 +39,8 @@ client.logOn(logOnOptions)
 
 client.on('loggedOn', () => {
     console.log('Hachi bot logged in')
+
+    client.enableTwoFactor(() => {})
     client.setPersona(SteamUser.EPersonaState.Online)
 })
 
