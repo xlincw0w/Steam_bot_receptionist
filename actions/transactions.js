@@ -3,6 +3,8 @@ const { GetCurrencies } = require('../utilities')
 const { GetBalance } = require('./userdata')
 const { find } = require('lodash')
 
+const { KEY_PRICE_BUY, KEY_PRICE_SELL, WITHDRAWAL_FEES, WITHDRAWAL_MIN } = require('../config')
+
 module.exports.HandlePurchase = async function HandlePurchase(steamID, params) {
     if (params.length !== 3) return { purchase: false, msg: 'Invalid parameters\n\nPlease make sure you type !buy <key amount> <cryptocurrency>.' }
     if (!constants.num_rg.test(params[1])) return { purchase: false, msg: 'Invalid parameters\n\n<key amount> should be a number' }
@@ -83,4 +85,22 @@ module.exports.HandleWithdraw = async function HandleSell(steamID, params) {
     const balance = await GetBalance(steamID)
 
     return { withdraw: true, msg: `Your withdraw request has been executed.\n\n${balance}` }
+}
+
+module.exports.SetBuyPrice = async function SetBuyPrice(params) {
+    if (params.length !== 2) return { withdraw: false, msg: 'Invalid parameters\n\nPlease make sure you type !setsellprice <price>.' }
+    if (!constants.float_rg.test(params[1])) return { withdraw: false, msg: 'Invalid parameters\n\n Price should be a real' }
+
+    KEY_PRICE_BUY = parseFloat(params[1])
+
+    return `Admin : \n\n✹ Buy price updated to ${KEY_PRICE_BUY}`
+}
+
+module.exports.SetSellPrice = async function SetBuyPrice(params) {
+    if (params.length !== 2) return { withdraw: false, msg: 'Invalid parameters\n\nPlease make sure you type !setsellprice <price>.' }
+    if (!constants.float_rg.test(params[1])) return { withdraw: false, msg: 'Invalid parameters\n\n Price should be a real' }
+
+    KEY_PRICE_SELL = parseFloat(params[1])
+
+    return `Admin : \n\n✹ Sell price updated to ${KEY_PRICE_SELL}`
 }
