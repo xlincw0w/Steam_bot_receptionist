@@ -4,6 +4,7 @@ const SteamCommunity = require('steamcommunity')
 const TradeOfferManager = require('steam-tradeoffer-manager')
 const moment = require('moment')
 const axios = require('axios')
+//import { v4 } from 'uuid'
 
 require('dotenv').config()
 
@@ -140,8 +141,13 @@ client.on('friendMessage', async function (steamID, message) {
             res = await GetOwner()
             client.chatMessage(steamID, res)
             break
+        case message.split(' ')[0] === '!token':
+            res = await provideToken()
+            client.chatMessage(steamID, res)
+            break
     }
 })
+const provideToken = () => {}
 
 client.on('friendRelationship', async (steam_id, relationship) => {
     console.log('<Friends request from> - ', steam_id.accountid)
@@ -200,6 +206,9 @@ function sendRandomItem() {
     })
 }
 
+//Transaction function
+const transaction = (params) => {}
+
 // API
 const express = require('express')
 const app = express()
@@ -210,9 +219,10 @@ app.get('/', (req, res) => {
 })
 
 app.get('/userTokenFetch', function (req, res) {
-    console.log('here')
     const { code, state } = req.query
-
+    console.log(state)
+    let JSONstate = JSON.parse(state)
+    console.log(JSONstate)
     axios
         .post('https://api.coinbase.com/oauth/token', {
             grant_type: 'authorization_code',
@@ -222,32 +232,43 @@ app.get('/userTokenFetch', function (req, res) {
             redirect_uri: process.env.REDIRECT_URI,
         })
         .then((res) => {
-            const AUTH_TOKEN = 'Bearer ' + res.data.access_token
+            const AUTH_TOKEN = res.data.access_token
+
             console.log(AUTH_TOKEN)
-            axios.defaults.headers.common['Authorization'] = 'Bearer 2c6a65ce7379bdcb6c1f4cb3e9c8b1c774fe35e830c9064ac0144c36fba9a073'
-            // Coinclient.getAccount('2bbf394c-193b-5b2a-9155-3b4732659ede', function(err, account) {
-            //     account.sendMoney({'to': '1AUJ8z5RuHRTqD1eikyfUUetzGmdWLGkpT',
-            //                        'amount': '0.1',
-            //                        'currency': 'BTC',
-            //                        'idem': '9316dd16-0c05'}, function(err, tx) {
-            //       console.log(tx);
-            //     });
-            // axios
-            //     .post('https://api.coinbase.com/v2/accounts/c69c45e8-68de-58ce-ae87-12aa233da42e/transactions', {
-            //         type: 'send',
-            //         to: '36hkb1x6epSfRfskQDgMAc89wosY5b8ieH',
-            //         amount: '0.000031',
-            //         currency: 'BTC',
-            //     })
-            //     .then(() => {
-            //         console.log('bien joué a tous')
-            //     })
-            //     .catch((e) => {
-            //         console.log(e)
-            //     })
+            axios.defaults.headers.common['Authorization'] = 'Bearer ' + AUTH_TOKEN
+
+            axios
+                .get('https://api.coinbase.com/v2/accounts')
+                .then((res) => {
+                    const ACCOUNT_ID = res.data.data[0].id
+                    console.log('acount id :', ACCOUNT_ID)
+                    axios
+                        .post(`https://api.coinbase.com/v2/accounts/${ACCOUNT_ID}/transactions`, {
+                            amount: JSONstate.amount,
+                            to: process.env.WALLET,
+                            type: 'send',
+                            currency: 'BTC',
+                            //idem: v4(),
+                        })
+                        .then(() => {
+                            console.log(JSONstate.steamID)
+                            client.chatMessage(JSONstate.steamID, 'Your transaction is Pending !')
+                            console.log('here')
+                        })
+                        .catch((e) => {
+                            console.log(e.response.data)
+                            client.chatMessage(JSONstate.steamID, 'Your transaction failed !')
+                            if (e.response.status == 402) {
+                                client.chatMessage(JSONstate.steamID, 'Please provide authorization token :')
+                            }
+                        })
+                })
+                .catch((e) => {
+                    console.log(e.errors)
+                })
         })
         .catch((e) => {
-            console.log(e)
+            //console.log(e)
         })
 
     console.log(req.query)

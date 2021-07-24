@@ -29,7 +29,8 @@
     "steam-totp": "^2.1.1",
     "steam-tradeoffer-manager": "^2.10.3",
     "steam-user": "^4.19.12",
-    "steamcommunity": "^3.43.1"
+    "steamcommunity": "^3.43.1",
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
     "dotenv": "^10.0.0",
