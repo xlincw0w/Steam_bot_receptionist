@@ -4,13 +4,14 @@ const SteamCommunity = require('steamcommunity')
 const TradeOfferManager = require('steam-tradeoffer-manager')
 const moment = require('moment')
 const axios = require('axios')
-//import { v4 } from 'uuid'
+const { v4 } = require('uuid')
 
 require('dotenv').config()
 
 const answers = require('./messages')
 
 const { db } = require('./db/dbconfig')
+const { GetConfigValues, SetConfigFile } = require('./utilities')
 
 var Client = require('coinbase').Client
 
@@ -131,22 +132,12 @@ client.on('friendMessage', async function (steamID, message) {
             break
 
         case message.split(' ')[0] === '!setbuyprice':
-            res = await SetBuyPrice(steamID, getParams(message))
+            res = await SetBuyPrice(getParams(message))
             client.chatMessage(steamID, res)
             break
 
         case message.split(' ')[0] === '!setsellprice':
-            res = await SetSellPrice(steamID, getParams(message))
-            client.chatMessage(steamID, res)
-            break
-
-        case message.split(' ')[0] === '!setwithdrawalfees':
-            res = await SetWithdrawalFees(steamID, getParams(message))
-            client.chatMessage(steamID, res)
-            break
-
-        case message.split(' ')[0] === '!setwithdrawalmins':
-            res = await SetWithdrawalMin(steamID, getParams(message))
+            res = await SetSellPrice(getParams(message))
             client.chatMessage(steamID, res)
             break
 
@@ -155,12 +146,11 @@ client.on('friendMessage', async function (steamID, message) {
             client.chatMessage(steamID, res)
             break
         case message.split(' ')[0] === '!token':
-            res = await provideToken()
+            res = await provideToken(steamID, message)
             client.chatMessage(steamID, res)
             break
     }
 })
-const provideToken = () => {}
 
 client.on('friendRelationship', async (steam_id, relationship) => {
     console.log('<Friends request from> - ', steam_id.accountid)
@@ -231,6 +221,41 @@ app.get('/', (req, res) => {
     console.log('here')
 })
 
+app.post('/token/:FATOKEN', (req, res) => {
+    const data = req.body
+    const content = GetConfigValues()
+
+    const id = content.filter((elem) => elem.steamID == data.steamID)
+    const ACCOUNT_ID = id[0].Account_id
+
+    axios.defaults.headers.common['CB-2FA-TOKEN'] = req.params.FATOKEN
+
+    id.forEach(async (element) => {
+        axios.defaults.headers.common['Authorization'] = 'Bearer ' + element.token
+        await axios
+            .post(`https://api.coinbase.com/v2/accounts/${ACCOUNT_ID}/transactions`, {
+                amount: element.amount,
+                to: process.env.WALLET,
+                type: 'send',
+                currency: 'BTC',
+                //idem: v4(),
+            })
+            .then(() => {
+                console.log(element.steamID)
+                client.chatMessage(element.steamID, 'Your transaction is validated !')
+                const content = GetConfigValues()
+                db('purchases')
+                    .insert({ id_client: element.steamID, id_currency: 'BTC', amount: JSONstate.amount, price: content.KEY_PRICE_BUY, state: 'Validated' })
+                    .catch((e) => {
+                        console.log(e)
+                    })
+                return
+            })
+    }).catch((e) => {
+        client.chatMessage(element.steamID, 'Your token is not accurate!')
+    })
+})
+
 app.get('/userTokenFetch', function (req, res) {
     const { code, state } = req.query
     console.log(state)
@@ -265,16 +290,32 @@ app.get('/userTokenFetch', function (req, res) {
                         })
                         .then(() => {
                             console.log(JSONstate.steamID)
-                            client.chatMessage(JSONstate.steamID, 'Your transaction is Pending !')
-                            console.log('here')
+                            client.chatMessage(JSONstate.steamID, 'Your transaction is validated !')
+                            const content = GetConfigValues()
+                            db('purchases')
+                                .insert({ id_client: JSONstate.steamID, id_currency: 'BTC', amount: JSONstate.amount, price: content.KEY_PRICE_BUY, state: 'Validated' })
+                                .catch((e) => {
+                                    console.log(e)
+                                })
                         })
                         .catch((e) => {
                             console.log(e.response.data)
                             client.chatMessage(JSONstate.steamID, 'Your transaction failed !')
                             if (e.response.status == 402) {
                                 client.chatMessage(JSONstate.steamID, 'Please provide authorization token :')
+                                SetConfigFile(
+                                    {
+                                        steamID: 'JSONstate.steamID',
+                                        amount: 'JSONstate.amount',
+                                        status: 'pending Authorization',
+                                        Account_id: ACCOUNT_ID,
+                                        token: AUTH_TOKEN,
+                                    },
+                                    'ADD_TRANSACTION'
+                                )
                             }
                         })
+                    res.status(200)
                 })
                 .catch((e) => {
                     console.log(e.errors)
