@@ -129,49 +129,6 @@ module.exports.HandleSell = async function HandleSell(steamID, params) {
             msg: `Your sale was failed.\n\n The transaction had a technical problem please retry later.\n\nBalance : ${balance.code} ${balance.balance - total_price}`,
         }
     }
-
-    // if (balance.balance < total_price) {
-    //     return { purchase: false, msg: `Your purchase failed.\n\n Please make sure that you sent your offert with the corrent amount of keys.\n\n${balance.response}` }
-    // } else {
-    //     let res = await axios.post(process.env.HACHI_STORE_API + '/offert', {
-    //         steamID,
-    //         amount,
-    //     })
-
-    //     if (res.data.offer) {
-    //         try {
-    //             db.transaction(async (trx) => {
-    //                 await db('sales')
-    //                     .insert({
-    //                         id_client: balance.id_client,
-    //                         id_currency: balance.id_currency,
-    //                         price: total_price,
-    //                         amount,
-    //                     })
-    //                     .transacting(trx)
-
-    //                 await db('balances')
-    //                     .update({
-    //                         balance: balance.balance + total_price,
-    //                     })
-    //                     .where({ id_client: balance.id_client, id_currency: balance.id_currency })
-    //                     .transacting(trx)
-    //             })
-
-    //             return {
-    //                 purchase: true,
-    //                 msg: `Your sale was validated.\n\nBalance : ${balance.code} ${balance.balance + total_price}`,
-    //             }
-    //         } catch (err) {
-    //             return {
-    //                 purchase: false,
-    //                 msg: `Your sale was failed.\n\n The transaction had a technical problem please retry later.\n\nBalance : ${balance.code} ${balance.balance - total_price}`,
-    //             }
-    //         }
-    //     } else {
-    //         return res.data.msg
-    //     }
-    // }
 }
 
 module.exports.HandleDeposit = async function HandleSell(steamID, params) {
