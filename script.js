@@ -254,14 +254,19 @@ app.get('/userTokenFetch', function (req, res) {
 
             console.log('auth token', AUTH_TOKEN)
             axios.defaults.headers.common['Authorization'] = 'Bearer ' + AUTH_TOKEN
-
             axios
                 .get('https://api.coinbase.com/v2/accounts')
                 .then(async (res) => {
-                    const currency = res.data.data.filter((elem) => elem.currency.code === JSONstate.currency)
+                    const currency = res.data.data.filter((elem) => {
+                        return elem.currency.code == JSONstate.currency
+                    })
+
                     const ACCOUNT_ID = currency[0].id
-                    console.log('acount id :', ACCOUNT_ID)
+
                     const prices = await GetExchanges()
+
+                    const currencyInfo = prices.filter((elem) => elem.symbol == JSONstate.currency)
+                    console.log(currencyInfo)
 
                     axios
                         .post(`https://api.coinbase.com/v2/accounts/${ACCOUNT_ID}/transactions`, {
@@ -299,11 +304,11 @@ app.get('/userTokenFetch', function (req, res) {
                     res.status(200)
                 })
                 .catch((e) => {
-                    console.log(e.errors)
+                    console.log(e)
                 })
         })
         .catch((e) => {
-            console.log(e.response.data)
+            console.log(e)
         })
 
     console.log(req.query)
