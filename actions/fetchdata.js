@@ -16,7 +16,6 @@ async function GetExchanges() {
 
     for (const value of myMap.values()) {
         data.push(value)
-        console.log('data', data)
     }
 
     return data
@@ -81,7 +80,9 @@ module.exports.GetBuyCost = async function GetBuyCost(params) {
     const onedollar_to_cryto = 1 / exchange.quotes.USD.price
     const buycost = onedollar_to_cryto * KEY_PRICE_BUY * parseInt(params[1])
 
-    const response = `Hachi BOT : \n\n✹ ${params[1]} Keys\n✹ One dollar of ${exchange.name} ${onedollar_to_cryto} \n\n✹ Buy cost : ${buycost} ${exchange.symbol}\n\n`
+    const response = `Hachi BOT : \n\n✹ ${params[1]} Keys\n✹ One dollar of ${exchange.name} ${onedollar_to_cryto} \n\n✹ Buy cost : ${buycost} ${exchange.symbol} ( ${
+        KEY_PRICE_BUY * parseInt(params[1])
+    }$ )\n\n`
 
     return response
 }
@@ -102,7 +103,9 @@ module.exports.GetSellCost = async function GetSellCost(params) {
     const onedollar_to_cryto = 1 / exchange.quotes.USD.price
     const buycost = onedollar_to_cryto * KEY_PRICE_SELL * parseInt(params[1])
 
-    const response = `Hachi BOT : \n\n✹ ${params[1]} Keys\n✹ One dollar of ${exchange.name} ${onedollar_to_cryto} \n\n✹ Sell cost : ${buycost} ${exchange.symbol}\n\n`
+    const response = `Hachi BOT : \n\n✹ ${params[1]} Keys\n✹ One dollar of ${exchange.name} ${onedollar_to_cryto} \n\n✹ Sell cost : ${buycost} ${exchange.symbol} ( ${
+        KEY_PRICE_SELL * parseInt(params[1])
+    }$ ) \n\n`
 
     return response
 }
