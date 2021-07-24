@@ -56,6 +56,8 @@ module.exports.GetOwner = async function GetOwner() {
 }
 
 module.exports.GetBuyCost = async function GetBuyCost(params) {
+    let { KEY_PRICE_BUY, KEY_PRICE_SELL } = GetConfigValues()
+
     if (params.length !== 3) return 'Invalid parameters\n\nPlease make sure you type !buycost <key amount> <cryptocurrency>.'
     if (!constants.num_rg.test(params[1])) return 'Invalid parameters\n\n<key amount> should be a number'
 
@@ -75,6 +77,8 @@ module.exports.GetBuyCost = async function GetBuyCost(params) {
 }
 
 module.exports.GetSellCost = async function GetSellCost(params) {
+    let { KEY_PRICE_BUY, KEY_PRICE_SELL } = GetConfigValues()
+
     if (params.length !== 3) return 'Invalid parameters\n\nPlease make sure you type !sellcost <key amount> <cryptocurrency>.'
     if (!constants.num_rg.test(params[1])) return 'Invalid parameters\n\n<key amount> should be a number'
 
@@ -86,7 +90,7 @@ module.exports.GetSellCost = async function GetSellCost(params) {
 
     let exchange = find(data, { symbol: params[2].toUpperCase() })
     const onedollar_to_cryto = 1 / exchange.quotes.USD.price
-    const buycost = onedollar_to_cryto * parseFloat(process.env.KEY_PRICE_SELL) * parseInt(params[1])
+    const buycost = onedollar_to_cryto * KEY_PRICE_SELL * parseInt(params[1])
 
     const response = `Hachi BOT : \n\n✹ ${params[1]} Keys\n✹ One dollar of ${exchange.name} ${onedollar_to_cryto} \n\n✹ Sell cost : ${buycost} ${exchange.symbol}\n\n`
 
