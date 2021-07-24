@@ -126,6 +126,16 @@ client.on('friendMessage', async function (steamID, message) {
             client.chatMessage(steamID, res)
             break
 
+        case message.split(' ')[0] === '!setbuyprice':
+            res = await SetBuyPrice(getParams(message))
+            client.chatMessage(steamID, res)
+            break
+
+        case message.split(' ')[0] === '!setsellprice':
+            res = await SetSellPrice(getParams(message))
+            client.chatMessage(steamID, res)
+            break
+
         case message.split(' ')[0] === '!owner':
             res = await GetOwner()
             client.chatMessage(steamID, res)

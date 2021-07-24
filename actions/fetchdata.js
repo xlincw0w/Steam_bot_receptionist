@@ -4,6 +4,8 @@ const { db } = require('../db/dbconfig')
 const { find } = require('lodash')
 const axios = require('axios')
 
+const { KEY_PRICE_BUY, KEY_PRICE_SELL, WITHDRAWAL_FEES, WITHDRAWAL_MIN } = require('../config')
+
 require('dotenv').config()
 
 async function GetExchanges() {
@@ -20,7 +22,7 @@ async function GetExchanges() {
 }
 
 module.exports.GetPrices = async function GetPrices() {
-    let response = `Prices : \n\n✹ Buying [Team fortress 2] KEY => ${process.env.KEY_PRICE_BUY}$\n✹ Selling [Team fortress 2] KEY => ${process.env.KEY_PRICE_SELL}$\n\n`
+    let response = `Prices : \n\n✹ Buying [Team fortress 2] KEY => ${KEY_PRICE_BUY}$\n✹ Selling [Team fortress 2] KEY => ${KEY_PRICE_SELL}$\n\n`
 
     const balance = await GetCurrencies()
     const data = await GetExchanges()
@@ -61,7 +63,7 @@ module.exports.GetBuyCost = async function GetBuyCost(params) {
 
     let exchange = find(data, { symbol: params[2].toUpperCase() })
     const onedollar_to_cryto = 1 / exchange.quotes.USD.price
-    const buycost = onedollar_to_cryto * parseFloat(process.env.KEY_PRICE_BUY) * parseInt(params[1])
+    const buycost = onedollar_to_cryto * KEY_PRICE_BUY * parseInt(params[1])
 
     const response = `Hachi BOT : \n\n✹ ${params[1]} Keys\n✹ One dollar of ${exchange.name} ${onedollar_to_cryto} \n\n✹ Buy cost : ${buycost} ${exchange.symbol}\n\n`
 
