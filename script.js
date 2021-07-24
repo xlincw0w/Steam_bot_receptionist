@@ -48,6 +48,8 @@ client.logOn(logOnOptions)
 client.on('loggedOn', () => {
     console.log('Hachi bot logged in')
 
+    console.log(client.steamID)
+
     client.enableTwoFactor(() => {})
     client.setPersona(SteamUser.EPersonaState.Online)
 })
