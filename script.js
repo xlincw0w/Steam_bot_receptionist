@@ -19,9 +19,9 @@ var Coinclient = new Client({ apiKey: 'API KEY', apiSecret: 'API SECRET' })
 
 // Actions
 const { getParams } = require('./utilities')
-const { HandlePurchase, HandleSell, HandleDeposit, HandleWithdraw } = require('./actions/transactions')
-const { GetBalance, provideToken } = require('./actions/userdata')
-const { GetPrices, GetFees, GetMinWithdrawal, GetOwner, GetBuyCost, GetSellCost } = require('./actions/fetchdata')
+const { HandlePurchase, HandleSell, HandleDeposit, HandleWithdraw, SetBuyPrice, SetSellPrice, SetWithdrawalFees, SetWithdrawalMin } = require('./actions/transactions')
+const { GetBalance } = require('./actions/userdata')
+const { GetPrices, GetFees, GetMinWithdrawal, GetOwner, GetBuyCost, GetSellCost, GetStock } = require('./actions/fetchdata')
 
 const client = new SteamUser()
 const community = new SteamCommunity()
@@ -111,7 +111,8 @@ client.on('friendMessage', async function (steamID, message) {
             break
 
         case message.split(' ')[0] === '!stock':
-            client.chatMessage(steamID, answers.stock)
+            res = await GetStock()
+            client.chatMessage(steamID, res)
             break
 
         case message.split(' ')[0] === '!stats':
