@@ -11,7 +11,7 @@ module.exports.GetBalance = async function GetBalance(steamID) {
         response += '✹ ' + (index + 1) + ' => ' + elem.designation + ' ' + elem.code + ' : ' + elem.balance + '\n'
     })
 
-    return response
+    return { array: balances, response }
 }
 
 module.exports.provideToken = async (steamID, token) => {

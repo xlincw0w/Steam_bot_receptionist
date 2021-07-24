@@ -109,7 +109,7 @@ client.on('friendMessage', async function (steamID3, message) {
 
         case message.split(' ')[0] === '!balance':
             res = await GetBalance(steamID)
-            client.chatMessage(steamID, res)
+            client.chatMessage(steamID, res.response)
             break
 
         case message.split(' ')[0] === '!stock':
