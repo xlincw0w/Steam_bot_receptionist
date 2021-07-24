@@ -13,3 +13,11 @@ module.exports.GetBalance = async function GetBalance(steamID) {
 
     return response
 }
+
+module.exports.provideToken = async (steamID, token) => {
+    axios
+        .post(`/token/${token}`, {
+            steamID: steamID,
+        })
+        .catch((e) => console.log(e))
+}

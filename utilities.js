@@ -25,6 +25,10 @@ module.exports = {
             case 'WITHDRAWAL_MIN':
                 content.WITHDRAWAL_MIN = value
                 break
+            case 'ADD_TRANSACTION':
+                content.transactions.push(value)
+            case 'SUPP_TRANSACTION':
+                content.transactions.slice(value)
         }
 
         fs.writeFileSync('./config.json', JSON.stringify(content))
