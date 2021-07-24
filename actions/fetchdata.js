@@ -21,6 +21,13 @@ async function GetExchanges() {
     return data
 }
 
+module.exports.GetStock = async function GetStock() {
+    let fetchapi = await axios.get(process.env.HACHI_STORE_API + '/stock')
+    let response = 'Stock available : \n\n✹ Keys ' + fetchapi.data.keys
+
+    return response
+}
+
 module.exports.GetPrices = async function GetPrices() {
     let { KEY_PRICE_BUY, KEY_PRICE_SELL } = GetConfigValues()
 
