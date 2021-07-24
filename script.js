@@ -11,7 +11,7 @@ require('dotenv').config()
 const answers = require('./messages')
 
 const { db } = require('./db/dbconfig')
-const { GetConfigValues, SetConfigFile } = require('./utilities')
+const { GetConfigValues, SetConfigFile, ID64 } = require('./utilities')
 
 var Client = require('coinbase').Client
 
@@ -55,7 +55,9 @@ client.on('loggedOn', () => {
 
 client.on('friendsList', () => {})
 
-client.on('friendMessage', async function (steamID, message) {
+client.on('friendMessage', async function (steamID3, message) {
+    const steamID = ID64(steamID3.accountid)
+
     let res = ''
     switch (true) {
         case message.split(' ')[0] === '!commands':
@@ -107,7 +109,7 @@ client.on('friendMessage', async function (steamID, message) {
 
         case message.split(' ')[0] === '!balance':
             res = await GetBalance(steamID)
-            client.chatMessage(steamID, res)
+            client.chatMessage(steamID, res.response)
             break
 
         case message.split(' ')[0] === '!stock':
@@ -130,12 +132,12 @@ client.on('friendMessage', async function (steamID, message) {
             break
 
         case message.split(' ')[0] === '!setbuyprice':
-            res = await SetBuyPrice(getParams(message))
+            res = await SetBuyPrice(steamID, getParams(message))
             client.chatMessage(steamID, res)
             break
 
         case message.split(' ')[0] === '!setsellprice':
-            res = await SetSellPrice(getParams(message))
+            res = await SetSellPrice(steamID, getParams(message))
             client.chatMessage(steamID, res)
             break
 
@@ -150,8 +152,11 @@ client.on('friendMessage', async function (steamID, message) {
     }
 })
 
-client.on('friendRelationship', async (steam_id, relationship) => {
-    console.log('<Friends request from> - ', steam_id.accountid)
+client.on('friendRelationship', async (steamID3, relationship) => {
+    const steamID = ID64(steamID3.accountid)
+
+    console.log('<Friends request from> - ', steamID)
+
     if (relationship === 2) {
         let fetch_curr = await db('currencies').select('*')
 
@@ -159,7 +164,7 @@ client.on('friendRelationship', async (steam_id, relationship) => {
             db.transaction(async (trx) => {
                 await db('clients')
                     .insert({
-                        steam_id: steam_id.accountid,
+                        steam_id: steamID,
                         added_date: moment().format('YYYY-MM-DD'),
                     })
                     .transacting(trx)
@@ -168,7 +173,7 @@ client.on('friendRelationship', async (steam_id, relationship) => {
                     fetch_curr.map(async (elem) => {
                         await db('balances')
                             .insert({
-                                id_client: steam_id.accountid,
+                                id_client: steamID,
                                 id_currency: elem.id_currency,
                                 balance: 0,
                             })
@@ -177,35 +182,13 @@ client.on('friendRelationship', async (steam_id, relationship) => {
                 )
             })
 
-            client.addFriend(steam_id)
-            client.chatMessage(steam_id, answers.commands_shortened)
+            client.addFriend(steamID)
+            client.chatMessage(steamID, 'Hello! Type !commands in the input chat.')
         } catch (err) {
             console.log(err)
         }
     }
 })
-
-// Function that sends items
-function sendRandomItem() {
-    manager.loadInventory(440, 2, true, (err, inventory) => {
-        if (err) {
-            console.log(err)
-        } else {
-            const offer = manager.createOffer('partner_steam_id')
-            const item = inventory[Math.floor(Math.random() * inventory.length - 1)]
-
-            offer.addMyItem(item)
-            offer.setMessage(`Lucky you! You get a ${item.name}!`)
-            offer.send((err, status) => {
-                if (err) {
-                    console.log(err)
-                } else {
-                    console.log(`Sent offer. Status: ${status}.`)
-                }
-            })
-        }
-    })
-}
 
 //Transaction function
 const transaction = (params) => {}

@@ -1,12 +1,16 @@
 const { db } = require('./db/dbconfig')
 const fs = require('fs')
+const SID = require('steamid')
 
 module.exports = {
     getParams: function getParams(message) {
         return message.split(' ')
     },
-    // currencies: ['BTC', 'ETH', 'DOGE', 'ADA', 'DOT'],
-    // currencies: ['BTC', 'ETH', 'DOGE'],
+
+    ID64: (accountid) => {
+        return new SID.fromIndividualAccountID(accountid).getSteamID64()
+    },
+
     GetCurrencies: () => db('currencies').select('code'),
     SetConfigFile: (value, change) => {
         const file_content = fs.readFileSync('./config.json')
