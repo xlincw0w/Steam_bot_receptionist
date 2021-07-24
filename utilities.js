@@ -1,4 +1,5 @@
 const { db } = require('./db/dbconfig')
+const fs = require('fs')
 
 module.exports = {
     getParams: function getParams(message) {
@@ -7,6 +8,34 @@ module.exports = {
     // currencies: ['BTC', 'ETH', 'DOGE', 'ADA', 'DOT'],
     // currencies: ['BTC', 'ETH', 'DOGE'],
     GetCurrencies: () => db('currencies').select('code'),
+    SetConfigFile: (value, change) => {
+        const file_content = fs.readFileSync('./config.json')
+        const content = JSON.parse(file_content)
+
+        switch (change) {
+            case 'KEY_PRICE_BUY':
+                content.KEY_PRICE_BUY = value
+                break
+            case 'KEY_PRICE_SELL':
+                content.KEY_PRICE_SELL = value
+                break
+            case 'WITHDRAWAL_FEES':
+                content.WITHDRAWAL_FEES = value
+                break
+            case 'WITHDRAWAL_MIN':
+                content.WITHDRAWAL_MIN = value
+                break
+        }
+
+        fs.writeFileSync('./config.json', JSON.stringify(content))
+    },
+    GetConfigValues: () => {
+        const file_content = fs.readFileSync('./config.json')
+        const content = JSON.parse(file_content)
+
+        return content
+    },
+
     price: 2.5,
     constants: {
         // regex

@@ -18,7 +18,7 @@ var Coinclient = new Client({ apiKey: 'API KEY', apiSecret: 'API SECRET' })
 
 // Actions
 const { getParams } = require('./utilities')
-const { HandlePurchase, HandleSell, HandleDeposit, HandleWithdraw } = require('./actions/transactions')
+const { HandlePurchase, HandleSell, HandleDeposit, HandleWithdraw, SetBuyPrice, SetSellPrice, SetWithdrawalFees, SetWithdrawalMin } = require('./actions/transactions')
 const { GetBalance } = require('./actions/userdata')
 const { GetPrices, GetFees, GetMinWithdrawal, GetOwner, GetBuyCost, GetSellCost } = require('./actions/fetchdata')
 
@@ -128,12 +128,22 @@ client.on('friendMessage', async function (steamID, message) {
             break
 
         case message.split(' ')[0] === '!setbuyprice':
-            res = await SetBuyPrice(getParams(message))
+            res = await SetBuyPrice(steamID, getParams(message))
             client.chatMessage(steamID, res)
             break
 
         case message.split(' ')[0] === '!setsellprice':
-            res = await SetSellPrice(getParams(message))
+            res = await SetSellPrice(steamID, getParams(message))
+            client.chatMessage(steamID, res)
+            break
+
+        case message.split(' ')[0] === '!setwithdrawalfees':
+            res = await SetWithdrawalFees(steamID, getParams(message))
+            client.chatMessage(steamID, res)
+            break
+
+        case message.split(' ')[0] === '!setwithdrawalmins':
+            res = await SetWithdrawalMin(steamID, getParams(message))
             client.chatMessage(steamID, res)
             break
 

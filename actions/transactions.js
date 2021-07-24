@@ -3,7 +3,7 @@ const { GetCurrencies } = require('../utilities')
 const { GetBalance } = require('./userdata')
 const { find } = require('lodash')
 
-const { KEY_PRICE_BUY, KEY_PRICE_SELL, WITHDRAWAL_FEES, WITHDRAWAL_MIN } = require('../config')
+const { GetConfigValues, SetConfigFile } = require('../utilities')
 
 module.exports.HandlePurchase = async function HandlePurchase(steamID, params) {
     if (params.length !== 3) return { purchase: false, msg: 'Invalid parameters\n\nPlease make sure you type !buy <key amount> <cryptocurrency>.' }
@@ -41,13 +41,12 @@ module.exports.HandleSell = async function HandleSell(steamID, params) {
 }
 
 module.exports.HandleDeposit = async function HandleSell(steamID, params) {
-    if (params.length !== 3) return { withdraw: false, msg: 'Invalid parameters\n\nPlease make sure you type !withdraw <crypto amount> <cryptocurrency>.' }
-    if (!constants.float_rg.test(params[1])) return { withdraw: false, msg: 'Invalid parameters\n\n<crypto amount> should be a real' }
+    if (params.length !== 3) return { deposit: false, msg: 'Invalid parameters\n\nPlease make sure you type !deposit <crypto amount> <cryptocurrency>.' }
+    if (!constants.float_rg.test(params[1])) return { deposit: false, msg: 'Invalid parameters\n\n<crypto amount> should be a real' }
 
     const currencies = await GetCurrencies()
-    if (!constants.alph_rg.test(params[2])) return { withdraw: false, msg: 'Invalid parameters\n\n<cryptocurrency> should be a currency\nExample ' + currencies[0].code }
-    if (!find(currencies, { code: params[2].toUpperCase() }))
-        return { withdraw: false, msg: 'Invalid parameters\n\n<cryptocurrency> does not exist\nExample ' + currencies[0].code }
+    if (!constants.alph_rg.test(params[2])) return { deposit: false, msg: 'Invalid parameters\n\n<cryptocurrency> should be a currency\nExample ' + currencies[0].code }
+    if (!find(currencies, { code: params[2].toUpperCase() })) return { deposit: false, msg: 'Invalid parameters\n\n<cryptocurrency> does not exist\nExample ' + currencies[0].code }
 
     let amount = params[1]
     let currency = params[2].toUpperCase()
@@ -91,20 +90,54 @@ module.exports.HandleWithdraw = async function HandleSell(steamID, params) {
     return { withdraw: true, msg: `Your withdraw request has been executed.\n\n${balance}` }
 }
 
-module.exports.SetBuyPrice = async function SetBuyPrice(params) {
-    if (params.length !== 2) return { withdraw: false, msg: 'Invalid parameters\n\nPlease make sure you type !setsellprice <price>.' }
-    if (!constants.float_rg.test(params[1])) return { withdraw: false, msg: 'Invalid parameters\n\n Price should be a real' }
+module.exports.SetBuyPrice = async function SetBuyPrice(steamID, params) {
+    if (steamID.accountid == process.env.ADMIN_STEAMID3) {
+        if (params.length !== 2) return { withdraw: false, msg: 'Invalid parameters\n\nPlease make sure you type !setsellprice <price>.' }
+        if (!constants.float_rg.test(params[1])) return { withdraw: false, msg: 'Invalid parameters\n\n Price should be a real' }
 
-    KEY_PRICE_BUY = parseFloat(params[1])
+        SetConfigFile(parseFloat(params[1]), 'KEY_PRICE_BUY')
 
-    return `Admin : \n\n✹ Buy price updated to ${KEY_PRICE_BUY}`
+        return `Admin : \n\n✹ Buy price updated to ${params[1]}`
+    } else {
+        return `Admin : \n\n✹ Operation not allowed !`
+    }
 }
 
-module.exports.SetSellPrice = async function SetBuyPrice(params) {
-    if (params.length !== 2) return { withdraw: false, msg: 'Invalid parameters\n\nPlease make sure you type !setsellprice <price>.' }
-    if (!constants.float_rg.test(params[1])) return { withdraw: false, msg: 'Invalid parameters\n\n Price should be a real' }
+module.exports.SetSellPrice = async function SetSellPrice(steamID, params) {
+    if (steamID.accountid == process.env.ADMIN_STEAMID3) {
+        if (params.length !== 2) return { withdraw: false, msg: 'Invalid parameters\n\nPlease make sure you type !setsellprice <price>.' }
+        if (!constants.float_rg.test(params[1])) return { withdraw: false, msg: 'Invalid parameters\n\n Price should be a real' }
 
-    KEY_PRICE_SELL = parseFloat(params[1])
+        SetConfigFile(parseFloat(params[1]), 'KEY_PRICE_SELL')
 
-    return `Admin : \n\n✹ Sell price updated to ${KEY_PRICE_SELL}`
+        return `Admin : \n\n✹ Sell price updated to ${params[1]}`
+    } else {
+        return `Admin : \n\n✹ Operation not allowed !`
+    }
+}
+
+module.exports.SetWithdrawalFees = async function SetWithdrawalFees(steamID, params) {
+    if (steamID.accountid == process.env.ADMIN_STEAMID3) {
+        if (params.length !== 2) return { withdraw: false, msg: 'Invalid parameters\n\nPlease make sure you type !setwithdrawalfees <price>.' }
+        if (!constants.float_rg.test(params[1])) return { withdraw: false, msg: 'Invalid parameters\n\n Price should be a real' }
+
+        SetConfigFile(parseFloat(params[1]), 'WITHDRAWAL_FEES')
+
+        return `Admin : \n\n✹ Buy price updated to ${params[1]}`
+    } else {
+        return `Admin : \n\n✹ Operation not allowed !`
+    }
+}
+
+module.exports.SetWithdrawalMin = async function SetWithdrawalMin(steamID, params) {
+    if (steamID.accountid == process.env.ADMIN_STEAMID3) {
+        if (params.length !== 2) return { withdraw: false, msg: 'Invalid parameters\n\nPlease make sure you type !setwithdrawalmins <price>.' }
+        if (!constants.float_rg.test(params[1])) return { withdraw: false, msg: 'Invalid parameters\n\n Price should be a real' }
+
+        SetConfigFile(parseFloat(params[1]), 'WITHDRAWAL_MINS')
+
+        return `Admin : \n\n✹ Sell price updated to ${params[1]}`
+    } else {
+        return `Admin : \n\n✹ Operation not allowed !`
+    }
 }
