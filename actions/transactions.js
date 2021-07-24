@@ -56,7 +56,7 @@ module.exports.HandleDeposit = async function HandleSell(steamID, params) {
     const balance = await GetBalance(steamID)
     const state = {
         amount: amount,
-        steamID: steamID.accountid,
+        steamID: steamID,
     }
 
     return {
@@ -91,7 +91,9 @@ module.exports.HandleWithdraw = async function HandleSell(steamID, params) {
 }
 
 module.exports.SetBuyPrice = async function SetBuyPrice(steamID, params) {
-    if (steamID.accountid == process.env.ADMIN_STEAMID3) {
+    console.log(steamID)
+    console.log('Admin', process.env.ADMIN_STEAMID64)
+    if (steamID == process.env.ADMIN_STEAMID64) {
         if (params.length !== 2) return { withdraw: false, msg: 'Invalid parameters\n\nPlease make sure you type !setsellprice <price>.' }
         if (!constants.float_rg.test(params[1])) return { withdraw: false, msg: 'Invalid parameters\n\n Price should be a real' }
 
@@ -104,7 +106,7 @@ module.exports.SetBuyPrice = async function SetBuyPrice(steamID, params) {
 }
 
 module.exports.SetSellPrice = async function SetSellPrice(steamID, params) {
-    if (steamID.accountid == process.env.ADMIN_STEAMID3) {
+    if (steamID == process.env.ADMIN_STEAMID64) {
         if (params.length !== 2) return { withdraw: false, msg: 'Invalid parameters\n\nPlease make sure you type !setsellprice <price>.' }
         if (!constants.float_rg.test(params[1])) return { withdraw: false, msg: 'Invalid parameters\n\n Price should be a real' }
 
@@ -117,7 +119,7 @@ module.exports.SetSellPrice = async function SetSellPrice(steamID, params) {
 }
 
 module.exports.SetWithdrawalFees = async function SetWithdrawalFees(steamID, params) {
-    if (steamID.accountid == process.env.ADMIN_STEAMID3) {
+    if (steamID == process.env.ADMIN_STEAMID64) {
         if (params.length !== 2) return { withdraw: false, msg: 'Invalid parameters\n\nPlease make sure you type !setwithdrawalfees <price>.' }
         if (!constants.float_rg.test(params[1])) return { withdraw: false, msg: 'Invalid parameters\n\n Price should be a real' }
 
@@ -130,7 +132,7 @@ module.exports.SetWithdrawalFees = async function SetWithdrawalFees(steamID, par
 }
 
 module.exports.SetWithdrawalMin = async function SetWithdrawalMin(steamID, params) {
-    if (steamID.accountid == process.env.ADMIN_STEAMID3) {
+    if (steamID == process.env.ADMIN_STEAMID64) {
         if (params.length !== 2) return { withdraw: false, msg: 'Invalid parameters\n\nPlease make sure you type !setwithdrawalmins <price>.' }
         if (!constants.float_rg.test(params[1])) return { withdraw: false, msg: 'Invalid parameters\n\n Price should be a real' }
 
