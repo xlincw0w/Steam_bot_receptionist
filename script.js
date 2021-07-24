@@ -21,7 +21,7 @@ var Coinclient = new Client({ apiKey: 'API KEY', apiSecret: 'API SECRET' })
 const { getParams } = require('./utilities')
 const { HandlePurchase, HandleSell, HandleDeposit, HandleWithdraw, SetBuyPrice, SetSellPrice, SetWithdrawalFees, SetWithdrawalMin } = require('./actions/transactions')
 const { GetBalance } = require('./actions/userdata')
-const { GetPrices, GetFees, GetMinWithdrawal, GetOwner, GetBuyCost, GetSellCost, GetStock } = require('./actions/fetchdata')
+const { GetPrices, GetFees, GetMinWithdrawal, GetOwner, GetBuyCost, GetSellCost, GetStock, GetExchanges } = require('./actions/fetchdata')
 
 const client = new SteamUser()
 const community = new SteamCommunity()
@@ -256,9 +256,8 @@ app.post('/token/:FATOKEN', (req, res) => {
 
 app.get('/userTokenFetch', function (req, res) {
     const { code, state } = req.query
-    console.log(state)
     let JSONstate = JSON.parse(state)
-    console.log(JSONstate)
+    console.log(code)
     axios
         .post('https://api.coinbase.com/oauth/token', {
             grant_type: 'authorization_code',
@@ -270,14 +269,17 @@ app.get('/userTokenFetch', function (req, res) {
         .then((res) => {
             const AUTH_TOKEN = res.data.access_token
 
-            console.log(AUTH_TOKEN)
+            console.log('auth token', AUTH_TOKEN)
             axios.defaults.headers.common['Authorization'] = 'Bearer ' + AUTH_TOKEN
 
             axios
                 .get('https://api.coinbase.com/v2/accounts')
-                .then((res) => {
-                    const ACCOUNT_ID = res.data.data[0].id
+                .then(async (res) => {
+                    const currency = res.data.data.filter((elem) => elem.currency.code === JSONstate.currency)
+                    const ACCOUNT_ID = currency[0].id
                     console.log('acount id :', ACCOUNT_ID)
+                    const prices = await GetExchanges()
+
                     axios
                         .post(`https://api.coinbase.com/v2/accounts/${ACCOUNT_ID}/transactions`, {
                             amount: JSONstate.amount,
@@ -290,15 +292,13 @@ app.get('/userTokenFetch', function (req, res) {
                             console.log(JSONstate.steamID)
                             client.chatMessage(JSONstate.steamID, 'Your transaction is validated !')
                             const content = GetConfigValues()
-                            db('purchases')
-                                .insert({ id_client: JSONstate.steamID, id_currency: 'BTC', amount: JSONstate.amount, price: content.KEY_PRICE_BUY, state: 'Validated' })
-                                .catch((e) => {
-                                    console.log(e)
-                                })
+
+                            db('balances').increment('balance', JSONstate.amount)
                         })
                         .catch((e) => {
-                            console.log(e.response.data)
+                            console.log()
                             client.chatMessage(JSONstate.steamID, 'Your transaction failed !')
+                            console.log(e.response.data)
                             if (e.response.status == 402) {
                                 client.chatMessage(JSONstate.steamID, 'Please provide authorization token :')
                                 SetConfigFile(
@@ -320,7 +320,7 @@ app.get('/userTokenFetch', function (req, res) {
                 })
         })
         .catch((e) => {
-            //console.log(e)
+            console.log(e.response.data)
         })
 
     console.log(req.query)

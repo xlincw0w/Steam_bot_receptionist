@@ -16,6 +16,7 @@ async function GetExchanges() {
 
     for (const value of myMap.values()) {
         data.push(value)
+        console.log('data', data)
     }
 
     return data
