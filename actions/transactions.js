@@ -41,7 +41,7 @@ module.exports.HandleSell = async function HandleSell(steamID, params) {
 }
 
 module.exports.HandleDeposit = async function HandleSell(steamID, params) {
-    if (params.length !== 3) return { withdraw: false, msg: 'Invalid parameters\n\nPlease make sure you type !withdraw <crypto amount> <cryptocurrency>.' }
+    if (params.length !== 3) return { withdraw: false, msg: 'Invalid parameters\n\nPlease make sure you type !deposit <crypto amount> <cryptocurrency>.' }
     if (!constants.float_rg.test(params[1])) return { withdraw: false, msg: 'Invalid parameters\n\n<crypto amount> should be a real' }
 
     const currencies = await GetCurrencies()
