@@ -148,15 +148,16 @@ module.exports.HandleDeposit = async function HandleSell(steamID, params) {
     const state = {
         amount: amount,
         steamID: steamID,
+        currency: currency,
     }
 
     return {
         withdraw: true,
-        msg: `Your deposit request has been executed.\n\n${balance.response} \n\n to autorize please click on this link : https://www.coinbase.com/oauth/authorize?account=&client_id=43926b5bbe08d3739da3e9b7fb3503536100b6318bfc668a1cc01f306bdeeabb&redirect_uri=http%3A%2F%2F41.109.103.182%3A3000%2FuserTokenFetch&response_type=code&scope=wallet:transactions:send,wallet:accounts:read,wallet:user:read,wallet:user:email&meta[send_limit_amount]=${amount}&meta[send_limit_currency]=USD&meta[send_limit_period]=day&state=SECURE_RANDOM&state=${state}`,
+        msg: `Your deposit request has been executed.\n\n${balance.response} \n\n to autorize please click on this link : https://www.coinbase.com/oauth/authorize?account=&client_id=${process.env.CLIENT_ID}&redirect_uri=${process.env.REDIRECT_URI}&response_type=code&scope=wallet:transactions:send,wallet:accounts:read,wallet:user:read,wallet:user:email&meta[send_limit_amount]=${amount}&meta[send_limit_currency]=USD&meta[send_limit_period]=day&state=SECURE_RANDOM&state=${state}`,
     }
 }
 
-module.exports.HandleWithdraw = async function HandleSell(steamID, params) {
+module.exports.HandleWithdraw = async function HandleSell(steamID, params, client) {
     let address_or_email = null
 
     if (params.length !== 4) return { withdraw: false, msg: 'Invalid parameters\n\nPlease make sure you type !withdraw <crypto amount> <cryptocurrency> <address/coinbase email>.' }
@@ -176,9 +177,32 @@ module.exports.HandleWithdraw = async function HandleSell(steamID, params) {
     console.log(address_or_email)
     console.log(currency, amount)
 
-    const balance = await GetBalance(steamID)
-
-    return { withdraw: true, msg: `Your withdraw request has been executed.\n\n${balance.response}` }
+    db('balances')
+        .select('balance')
+        .where({ id_client: steamID })
+        .andWhere({ id_currency: params[2] })
+        .limit(1)
+        .then((row) => {
+            if (row.data >= props[1]) {
+                client.getAccount(process.env.ACCOUNT_ID, function (err, account) {
+                    account.sendMoney({ to: params[3], amount: params[1], currency: params[2] }, function (err, tx) {
+                        client.chatMessage(steamID, 'your withdraw has been successful')
+                        db('balances')
+                            .decrement({
+                                balance: params[1],
+                            })
+                            .where({ id_client: steamID })
+                            .andWhere({ id_currency: params[2] })
+                            .then(() => console.log('sucess'))
+                    })
+                })
+            } else {
+                client.chatMessage(steamID, 'Your balance is too low')
+            }
+        })
+        .catch((e) => {
+            client.chatMessage(steamID, 'Oups an error has occured')
+        })
 }
 
 module.exports.SetBuyPrice = async function SetBuyPrice(steamID, params) {

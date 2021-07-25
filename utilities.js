@@ -30,9 +30,16 @@ module.exports = {
                 content.WITHDRAWAL_MIN = value
                 break
             case 'ADD_TRANSACTION':
-                content.transactions.push(value)
+                const index = content.transactions.indexOf((elem) => elem.steamID == value.steamID)
+                if (index == -1) {
+                    content.transactions.push(value)
+                } else {
+                    content.transactions.slice(index)
+                    content.transactions.push(value)
+                }
+
             case 'SUPP_TRANSACTION':
-                content.transactions.slice(value)
+                content.transactions.filter((elem) => elem.steamID != value)
         }
 
         fs.writeFileSync('./config.json', JSON.stringify(content))

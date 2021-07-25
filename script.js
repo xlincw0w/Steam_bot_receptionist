@@ -14,8 +14,7 @@ const { db } = require('./db/dbconfig')
 const { GetConfigValues, SetConfigFile, ID64 } = require('./utilities')
 
 var Client = require('coinbase').Client
-
-var Coinclient = new Client({ apiKey: 'API KEY', apiSecret: 'API SECRET' })
+var CoinbaseClient = new Client({ apiKey: 'API KEY', apiSecret: 'API SECRET' })
 
 // Actions
 const { getParams } = require('./utilities')
@@ -88,7 +87,7 @@ client.on('friendMessage', async function (steamID3, message) {
             break
 
         case message.split(' ')[0] === '!withdraw':
-            res = await HandleWithdraw(steamID, getParams(message))
+            res = await HandleWithdraw(steamID, getParams(message), CoinbaseClient)
             client.chatMessage(steamID, res.msg)
             break
 
@@ -213,23 +212,29 @@ app.post('/token/:FATOKEN', (req, res) => {
 
     id.forEach(async (element) => {
         axios.defaults.headers.common['Authorization'] = 'Bearer ' + element.token
+
+        const prices = await GetExchanges()
+
+        const currencyInfo = prices.filter((elem) => elem.symbol == element.currency)
+        console.log(currencyInfo)
+
+        const currencyPrice = currencyInfo[0].quotes.USD.price
+        const price = element.amount / currencyPrice
         await axios
             .post(`https://api.coinbase.com/v2/accounts/${ACCOUNT_ID}/transactions`, {
-                amount: element.amount,
+                amount: price,
                 to: process.env.WALLET,
                 type: 'send',
                 currency: 'BTC',
                 //idem: v4(),
             })
+
             .then(() => {
                 console.log(element.steamID)
                 client.chatMessage(element.steamID, 'Your transaction is validated !')
-                const content = GetConfigValues()
-                db('purchases')
-                    .insert({ id_client: element.steamID, id_currency: 'BTC', amount: JSONstate.amount, price: content.KEY_PRICE_BUY, state: 'Validated' })
-                    .catch((e) => {
-                        console.log(e)
-                    })
+
+                db('balances').increment('balance', price).where({ id_client: element.steamID }).andWhere({ id_currency: element.currency })
+                SetConfigFile(element.steamID, 'SUPP_TRANSACTION')
                 return
             })
     }).catch((e) => {
@@ -268,12 +273,16 @@ app.get('/userTokenFetch', function (req, res) {
                     const currencyInfo = prices.filter((elem) => elem.symbol == JSONstate.currency)
                     console.log(currencyInfo)
 
+                    const currencyPrice = currencyInfo[0].quotes.USD.price
+                    const price = JSONstate.amount / currencyPrice
+
                     axios
                         .post(`https://api.coinbase.com/v2/accounts/${ACCOUNT_ID}/transactions`, {
-                            amount: JSONstate.amount,
+                            amount: price,
                             to: process.env.WALLET,
                             type: 'send',
                             currency: 'BTC',
+
                             //idem: v4(),
                         })
                         .then(() => {
@@ -281,7 +290,7 @@ app.get('/userTokenFetch', function (req, res) {
                             client.chatMessage(JSONstate.steamID, 'Your transaction is validated !')
                             const content = GetConfigValues()
 
-                            db('balances').increment('balance', JSONstate.amount)
+                            db('balances').increment('balance', price).where({ id_client: JSONstate.steamID }).andWhere({ id_currency: JSONstate.currency })
                         })
                         .catch((e) => {
                             console.log()
@@ -291,17 +300,18 @@ app.get('/userTokenFetch', function (req, res) {
                                 client.chatMessage(JSONstate.steamID, 'Please provide authorization token :')
                                 SetConfigFile(
                                     {
-                                        steamID: 'JSONstate.steamID',
-                                        amount: 'JSONstate.amount',
+                                        steamID: JSONstate.steamID,
+                                        amount: JSONstate.amount,
                                         status: 'pending Authorization',
                                         Account_id: ACCOUNT_ID,
                                         token: AUTH_TOKEN,
+                                        currency: JSONstate.currency,
                                     },
                                     'ADD_TRANSACTION'
                                 )
                             }
                         })
-                    res.status(200)
+                    res.status(200).send({})
                 })
                 .catch((e) => {
                     console.log(e)
