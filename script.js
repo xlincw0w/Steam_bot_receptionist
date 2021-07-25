@@ -325,7 +325,27 @@ app.get('/', (req, res) => {
 // })
 
 app.post('/webhook', (req, res) => {
-    console.log(req.body)
+    const data = req.body
+    const address = data.data.address
+    const amount = additional_data.amount.amount
+    const currency = additional_data.amount.currency
+
+    db('clients')
+        .select('steam_id')
+        .where({ specific_address: address })
+        .then((row) => {
+            if (row.length > 0) {
+                db('balances')
+                    .increment({ balance: amount })
+                    .where({ id_currency: currency })
+                    .then(() => {
+                        client.chatMessage(row.data, `Your deposit of ${amount} has been added to your total balance  `)
+                    })
+            }
+        })
+        .catch((e) => {
+            client.chatMessage(row.data, `Oups something wrong happened `)
+        })
 })
 
 app.listen(PORT, function () {
