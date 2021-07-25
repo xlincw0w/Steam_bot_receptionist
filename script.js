@@ -201,127 +201,131 @@ app.get('/', (req, res) => {
     console.log('here')
 })
 
-app.post('/token/:FATOKEN', (req, res) => {
-    const data = req.body
-    const content = GetConfigValues()
+// app.post('/token/:FATOKEN', (req, res) => {
+//     const data = req.body
+//     const content = GetConfigValues()
 
-    const id = content.filter((elem) => elem.steamID == data.steamID)
-    const ACCOUNT_ID = id[0].Account_id
+//     const id = content.filter((elem) => elem.steamID == data.steamID)
+//     const ACCOUNT_ID = id[0].Account_id
 
-    axios.defaults.headers.common['CB-2FA-TOKEN'] = req.params.FATOKEN
+//     axios.defaults.headers.common['CB-2FA-TOKEN'] = req.params.FATOKEN
 
-    id.forEach(async (element) => {
-        axios.defaults.headers.common['Authorization'] = 'Bearer ' + element.token
+//     id.forEach(async (element) => {
+//         axios.defaults.headers.common['Authorization'] = 'Bearer ' + element.token
 
-        const prices = await GetExchanges()
+//         const prices = await GetExchanges()
 
-        const currencyInfo = prices.filter((elem) => elem.symbol == element.currency)
-        console.log(currencyInfo)
+//         const currencyInfo = prices.filter((elem) => elem.symbol == element.currency)
+//         console.log(currencyInfo)
 
-        const currencyPrice = currencyInfo[0].quotes.USD.price
-        const price = element.amount / currencyPrice
-        await axios
-            .post(`https://api.coinbase.com/v2/accounts/${ACCOUNT_ID}/transactions`, {
-                amount: price,
-                to: process.env.WALLET,
-                type: 'send',
-                currency: 'BTC',
-                //idem: v4(),
-            })
+//         const currencyPrice = currencyInfo[0].quotes.USD.price
+//         const price = element.amount / currencyPrice
+//         await axios
+//             .post(`https://api.coinbase.com/v2/accounts/${ACCOUNT_ID}/transactions`, {
+//                 amount: price,
+//                 to: process.env.WALLET,
+//                 type: 'send',
+//                 currency: 'BTC',
+//                 //idem: v4(),
+//             })
 
-            .then(() => {
-                console.log(element.steamID)
-                client.chatMessage(element.steamID, 'Your transaction is validated !')
+//             .then(() => {
+//                 console.log(element.steamID)
+//                 client.chatMessage(element.steamID, 'Your transaction is validated !')
 
-                db('balances').increment('balance', price).where({ id_client: element.steamID }).andWhere({ id_currency: element.currency })
-                SetConfigFile(element.steamID, 'SUPP_TRANSACTION')
-                return
-            })
-    }).catch((e) => {
-        client.chatMessage(element.steamID, 'Your token is not accurate!')
-    })
-})
+//                 db('balances').increment('balance', price).where({ id_client: element.steamID }).andWhere({ id_currency: element.currency })
+//                 SetConfigFile(element.steamID, 'SUPP_TRANSACTION')
+//                 return
+//             })
+//     }).catch((e) => {
+//         client.chatMessage(element.steamID, 'Your token is not accurate!')
+//     })
+// })
 
-app.get('/userTokenFetch', function (req, res) {
-    const { code, state } = req.query
-    let JSONstate = JSON.parse(state)
-    console.log(code)
-    axios
-        .post('https://api.coinbase.com/oauth/token', {
-            grant_type: 'authorization_code',
-            code: code,
-            client_id: process.env.CLIENT_ID,
-            client_secret: process.env.CLIENT_SECRET,
-            redirect_uri: process.env.REDIRECT_URI,
-        })
-        .then((res) => {
-            const AUTH_TOKEN = res.data.access_token
+// app.get('/userTokenFetch', function (req, res) {
+//     const { code, state } = req.query
+//     let JSONstate = JSON.parse(state)
+//     console.log(code)
+//     axios
+//         .post('https://api.coinbase.com/oauth/token', {
+//             grant_type: 'authorization_code',
+//             code: code,
+//             client_id: process.env.CLIENT_ID,
+//             client_secret: process.env.CLIENT_SECRET,
+//             redirect_uri: process.env.REDIRECT_URI,
+//         })
+//         .then((res) => {
+//             const AUTH_TOKEN = res.data.access_token
 
-            console.log('auth token', AUTH_TOKEN)
-            axios.defaults.headers.common['Authorization'] = 'Bearer ' + AUTH_TOKEN
-            axios
-                .get('https://api.coinbase.com/v2/accounts')
-                .then(async (res) => {
-                    const currency = res.data.data.filter((elem) => {
-                        return elem.currency.code == JSONstate.currency
-                    })
+//             console.log('auth token', AUTH_TOKEN)
+//             axios.defaults.headers.common['Authorization'] = 'Bearer ' + AUTH_TOKEN
+//             axios
+//                 .get('https://api.coinbase.com/v2/accounts')
+//                 .then(async (res) => {
+//                     const currency = res.data.data.filter((elem) => {
+//                         return elem.currency.code == JSONstate.currency
+//                     })
 
-                    const ACCOUNT_ID = currency[0].id
+//                     const ACCOUNT_ID = currency[0].id
 
-                    const prices = await GetExchanges()
+//                     const prices = await GetExchanges()
 
-                    const currencyInfo = prices.filter((elem) => elem.symbol == JSONstate.currency)
-                    console.log(currencyInfo)
+//                     const currencyInfo = prices.filter((elem) => elem.symbol == JSONstate.currency)
+//                     console.log(currencyInfo)
 
-                    const currencyPrice = currencyInfo[0].quotes.USD.price
-                    const price = JSONstate.amount / currencyPrice
+//                     const currencyPrice = currencyInfo[0].quotes.USD.price
+//                     const price = JSONstate.amount / currencyPrice
 
-                    axios
-                        .post(`https://api.coinbase.com/v2/accounts/${ACCOUNT_ID}/transactions`, {
-                            amount: price,
-                            to: process.env.WALLET,
-                            type: 'send',
-                            currency: 'BTC',
+//                     axios
+//                         .post(`https://api.coinbase.com/v2/accounts/${ACCOUNT_ID}/transactions`, {
+//                             amount: price,
+//                             to: process.env.WALLET,
+//                             type: 'send',
+//                             currency: 'BTC',
 
-                            //idem: v4(),
-                        })
-                        .then(() => {
-                            console.log(JSONstate.steamID)
-                            client.chatMessage(JSONstate.steamID, 'Your transaction is validated !')
-                            const content = GetConfigValues()
+//                             //idem: v4(),
+//                         })
+//                         .then(() => {
+//                             console.log(JSONstate.steamID)
+//                             client.chatMessage(JSONstate.steamID, 'Your transaction is validated !')
+//                             const content = GetConfigValues()
 
-                            db('balances').increment('balance', price).where({ id_client: JSONstate.steamID }).andWhere({ id_currency: JSONstate.currency })
-                        })
-                        .catch((e) => {
-                            console.log()
-                            client.chatMessage(JSONstate.steamID, 'Your transaction failed !')
-                            console.log(e.response.data)
-                            if (e.response.status == 402) {
-                                client.chatMessage(JSONstate.steamID, 'Please provide authorization token :')
-                                SetConfigFile(
-                                    {
-                                        steamID: JSONstate.steamID,
-                                        amount: JSONstate.amount,
-                                        status: 'pending Authorization',
-                                        Account_id: ACCOUNT_ID,
-                                        token: AUTH_TOKEN,
-                                        currency: JSONstate.currency,
-                                    },
-                                    'ADD_TRANSACTION'
-                                )
-                            }
-                        })
-                    res.status(200).send({})
-                })
-                .catch((e) => {
-                    console.log(e)
-                })
-        })
-        .catch((e) => {
-            console.log(e)
-        })
+//                             db('balances').increment('balance', price).where({ id_client: JSONstate.steamID }).andWhere({ id_currency: JSONstate.currency })
+//                         })
+//                         .catch((e) => {
+//                             console.log()
+//                             client.chatMessage(JSONstate.steamID, 'Your transaction failed !')
+//                             console.log(e.response.data)
+//                             if (e.response.status == 402) {
+//                                 client.chatMessage(JSONstate.steamID, 'Please provide authorization token :')
+//                                 SetConfigFile(
+//                                     {
+//                                         steamID: JSONstate.steamID,
+//                                         amount: JSONstate.amount,
+//                                         status: 'pending Authorization',
+//                                         Account_id: ACCOUNT_ID,
+//                                         token: AUTH_TOKEN,
+//                                         currency: JSONstate.currency,
+//                                     },
+//                                     'ADD_TRANSACTION'
+//                                 )
+//                             }
+//                         })
+//                     res.status(200).send({})
+//                 })
+//                 .catch((e) => {
+//                     console.log(e)
+//                 })
+//         })
+//         .catch((e) => {
+//             console.log(e)
+//         })
 
-    console.log(req.query)
+//     console.log(req.query)
+// })
+
+app.post('/webhook', (req, res) => {
+    console.log(req.body)
 })
 
 app.listen(PORT, function () {

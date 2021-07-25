@@ -5,6 +5,7 @@ const { find } = require('lodash')
 
 const { GetConfigValues, SetConfigFile } = require('../utilities')
 const { GetExchanges } = require('./fetchdata')
+const { GetCurrencies } = require('./utilities')
 
 const axios = require('axios')
 const { db } = require('../db/dbconfig')
@@ -131,7 +132,7 @@ module.exports.HandleSell = async function HandleSell(steamID, params) {
     }
 }
 
-module.exports.HandleDeposit = async function HandleSell(steamID, params) {
+module.exports.HandleDeposit = async function HandleSell(steamID, params, client) {
     if (params.length !== 3) return { deposit: false, msg: 'Invalid parameters\n\nPlease make sure you type !deposit <crypto amount> <cryptocurrency>.' }
     if (!constants.float_rg.test(params[1])) return { deposit: false, msg: 'Invalid parameters\n\n<crypto amount> should be a real' }
 
@@ -151,9 +152,22 @@ module.exports.HandleDeposit = async function HandleSell(steamID, params) {
         currency: currency,
     }
 
+    const WalletAccount = await client.getAccounts({}, function (err, accounts) {
+        const account = accounts.data.filter((elem) => elem.currency == currency)
+        return account
+    })
+
+    const address = await client.getAccount(process.env.CLIENT_ID, async function (err, account) {
+        const address = await WalletAccount.createAddress(null, function (err, address) {
+            return address.data.address
+        })
+        return address
+    })
+    db('clients').update({ specific_address: address }).where({ steam_id: steamID })
+
     return {
         withdraw: true,
-        msg: `Your deposit request has been executed.\n\n${balance.response} \n\n to autorize please click on this link : https://www.coinbase.com/oauth/authorize?account=&client_id=${process.env.CLIENT_ID}&redirect_uri=${process.env.REDIRECT_URI}&response_type=code&scope=wallet:transactions:send,wallet:accounts:read,wallet:user:read,wallet:user:email&meta[send_limit_amount]=${amount}&meta[send_limit_currency]=USD&meta[send_limit_period]=day&state=SECURE_RANDOM&state=${state}`,
+        msg: `Your deposit request has been executed.\n\n${balance.response} \n\n Wallet Address :${address}}`,
     }
 }
 
