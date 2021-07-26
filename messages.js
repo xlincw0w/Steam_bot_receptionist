@@ -17,4 +17,6 @@ module.exports = {
     balance: 'Balance',
     stock: 'Stock',
     stats: 'Stats',
+    bulk: 'No information for now',
+    support: 'No information for now',
 }

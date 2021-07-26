@@ -144,9 +144,18 @@ client.on('friendMessage', async function (steamID3, message) {
             res = await GetOwner()
             client.chatMessage(steamID, res)
             break
+
         case message.split(' ')[0] === '!token':
             res = await provideToken(steamID, message)
             client.chatMessage(steamID, res)
+            break
+
+        case message.split(' ')[0] === '!bulk':
+            client.chatMessage(steamID, answers.bulk)
+            break
+
+        case message.split(' ')[0] === '!support':
+            client.chatMessage(steamID, answers.support)
             break
 
         default:
@@ -199,6 +208,9 @@ const transaction = (params) => {}
 // API
 const express = require('express')
 const app = express()
+
+app.use(require('cors')())
+
 const PORT = process.env.PORT || 3000
 
 app.get('/', (req, res) => {
