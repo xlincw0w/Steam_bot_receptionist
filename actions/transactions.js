@@ -5,7 +5,6 @@ const { find } = require('lodash')
 
 const { GetConfigValues, SetConfigFile } = require('../utilities')
 const { GetExchanges } = require('./fetchdata')
-const { GetCurrencies } = require('./utilities')
 
 const axios = require('axios')
 const { db } = require('../db/dbconfig')
