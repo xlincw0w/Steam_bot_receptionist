@@ -72,7 +72,7 @@ module.exports.HandlePurchase = async function HandlePurchase(steamID, params) {
                 }
             }
         } else {
-            return res.data.msg
+            return { msg: res.data.msg }
         }
     }
 }

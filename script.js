@@ -148,6 +148,10 @@ client.on('friendMessage', async function (steamID3, message) {
             res = await provideToken(steamID, message)
             client.chatMessage(steamID, res)
             break
+
+        default:
+            client.chatMessage(steamID, answers.commands_shortened)
+            break
     }
 })
 
@@ -199,6 +203,15 @@ const PORT = process.env.PORT || 3000
 
 app.get('/', (req, res) => {
     console.log('here')
+})
+
+app.get('/keyprice', (req, res) => {
+    const content = GetConfigValues()
+
+    res.send({
+        KEY_PRICE_BUY: content.KEY_PRICE_BUY,
+        KEY_PRICE_SELL: content.KEY_PRICE_SELL,
+    })
 })
 
 app.post('/token/:FATOKEN', (req, res) => {
