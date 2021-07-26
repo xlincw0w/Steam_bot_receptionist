@@ -14,7 +14,7 @@ const { db } = require('./db/dbconfig')
 const { GetConfigValues, SetConfigFile, ID64 } = require('./utilities')
 
 var Client = require('coinbase').Client
-var CoinbaseClient = new Client({ apiKey: 'API KEY', apiSecret: 'API SECRET' })
+var CoinbaseClient = new Client({ apiKey: process.env.COINBASE_API_KEY, apiSecret: process.env.COINBASE_API_SECRET, strictSSL: false })
 
 // Actions
 const { getParams } = require('./utilities')
@@ -82,8 +82,8 @@ client.on('friendMessage', async function (steamID3, message) {
             break
 
         case message.split(' ')[0] === '!deposit':
-            res = await HandleDeposit(steamID, getParams(message))
-            client.chatMessage(steamID, res.msg)
+            res = await HandleDeposit(steamID, getParams(message), CoinbaseClient)
+            client.chatMessage(steamID, 'res.msg')
             break
 
         case message.split(' ')[0] === '!withdraw':

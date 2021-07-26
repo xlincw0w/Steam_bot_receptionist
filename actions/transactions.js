@@ -142,7 +142,7 @@ module.exports.HandleDeposit = async function HandleSell(steamID, params, client
     let amount = params[1]
     let currency = params[2].toUpperCase()
 
-    console.log(currency, amount)
+    // console.log(currency, amount)
 
     const balance = await GetBalance(steamID)
     const state = {
@@ -151,23 +151,32 @@ module.exports.HandleDeposit = async function HandleSell(steamID, params, client
         currency: currency,
     }
 
-    const WalletAccount = await client.getAccounts({}, function (err, accounts) {
-        const account = accounts.data.filter((elem) => elem.currency == currency)
-        return account
-    })
+    client.getAccounts({}, async function (err, accounts) {
+        if (err) {
+            console.log(err)
+        } else {
+            const WalletAccount = accounts.filter((elem) => {
+                return elem.currency == currency
+            })
 
-    const address = await client.getAccount(process.env.CLIENT_ID, async function (err, account) {
-        const address = await WalletAccount.createAddress(null, function (err, address) {
-            return address.data.address
-        })
-        return address
+            client.getAccount(process.env.CLIENT_ID, async function (err, account) {
+                if (err) {
+                    console.log('ee')
+                    console.log(err)
+                } else {
+                    WalletAccount.createAddress(null, function (err, address) {
+                        if (err) {
+                            console.log('dd')
+                            console.log(err)
+                        } else {
+                            console.log(address)
+                            db('clients').update({ specific_address: address.data.address }).where({ steam_id: steamID })
+                        }
+                    })
+                }
+            })
+        }
     })
-    db('clients').update({ specific_address: address }).where({ steam_id: steamID })
-
-    return {
-        withdraw: true,
-        msg: `Your deposit request has been executed.\n\n${balance.response} \n\n Wallet Address :${address}}`,
-    }
 }
 
 module.exports.HandleWithdraw = async function HandleSell(steamID, params, client) {
