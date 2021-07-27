@@ -142,7 +142,7 @@ module.exports.HandleSell = async function HandleSell(steamID, params) {
     }
 }
 
-module.exports.HandleDeposit = async function HandleSell(steamID, params, client) {
+module.exports.HandleDeposit = async function HandleSell(steamID, params, client, clientSteam) {
     if (params.length !== 3) return { deposit: false, msg: 'Invalid parameters\n\nPlease make sure you type !deposit <crypto amount> <cryptocurrency>.' }
     if (!constants.float_rg.test(params[1])) return { deposit: false, msg: 'Invalid parameters\n\n<crypto amount> should be a real' }
 
@@ -169,26 +169,41 @@ module.exports.HandleDeposit = async function HandleSell(steamID, params, client
             const WalletAccount = accounts.filter((elem) => {
                 return elem.currency == currency
             })
+            console.log(WalletAccount[0])
 
-            client.getAccount(process.env.CLIENT_ID, async function (err, account) {
-                if (err) {
-                    console.log(err)
-                } else {
-                    WalletAccount.createAddress(null, function (err, address) {
-                        if (err) {
-                            console.log(err)
-                        } else {
-                            console.log(address)
-                            db('clients').update({ specific_address: address.data.address }).where({ steam_id: steamID })
-                        }
-                    })
-                }
+            client.getAccount(WalletAccount[0].id, async function (err, account) {
+                account.createAddress(null, function (err, address) {
+                    console.log(address)
+                    if (err) {
+                        console.log(err)
+                    } else {
+                        db('clients')
+                            .update({ specific_address: address.address })
+                            .where({ steam_id: steamID })
+                            .catch((e) => console.log(e))
+                        clientSteam.chatMessage(steamID, `your address :${address.address}`)
+                    }
+                })
+                // if (err) {
+                //     console.log('ee')
+                //     console.log(err)
+                // } else {
+                //     WalletAccount.createAddress(null, function (err, address) {
+                //         if (err) {
+                //             console.log('dd')
+                //             console.log(err)
+                //         } else {
+                //             console.log(address)
+                //             db('clients').update({ specific_address: address.data.address }).where({ steam_id: steamID })
+                //         }
+                //     })
+                // }
             })
         }
     })
 }
 
-module.exports.HandleWithdraw = async function HandleSell(steamID, params, client) {
+module.exports.HandleWithdraw = async function HandleSell(steamID, params, client, clientSteam) {
     let address_or_email = null
 
     if (params.length !== 4) return { withdraw: false, msg: 'Invalid parameters\n\nPlease make sure you type !withdraw <crypto amount> <cryptocurrency> <address/coinbase email>.' }
@@ -214,25 +229,40 @@ module.exports.HandleWithdraw = async function HandleSell(steamID, params, clien
         .andWhere({ id_currency: params[2] })
         .limit(1)
         .then((row) => {
-            if (row.data >= props[1]) {
-                client.getAccount(process.env.ACCOUNT_ID, function (err, account) {
-                    account.sendMoney({ to: params[3], amount: params[1], currency: params[2] }, function (err, tx) {
-                        client.chatMessage(steamID, 'your withdraw has been successful')
-                        db('balances')
-                            .decrement({
-                                balance: params[1],
+            if (row[0].balance >= params[1]) {
+                client.getAccounts({}, async function (err, accounts) {
+                    if (err) {
+                        console.log(err)
+                    } else {
+                        const WalletAccount = accounts.filter((elem) => {
+                            return elem.currency == currency
+                        })
+
+                        client.getAccount(WalletAccount[0].id, function (err, account) {
+                            account.sendMoney({ to: params[3], amount: params[1], currency: params[2] }, function (err, tx) {
+                                if (!err) {
+                                    clientSteam.chatMessage(steamID, 'your withdraw has been successful')
+                                    db('balances')
+                                        .decrement({
+                                            balance: params[1],
+                                        })
+                                        .where({ id_client: steamID })
+                                        .andWhere({ id_currency: params[2] })
+                                        .then(() => console.log('sucess'))
+                                } else {
+                                    clientSteam.chatMessage(steamID, 'Please provide a valid withdraw address')
+                                }
                             })
-                            .where({ id_client: steamID })
-                            .andWhere({ id_currency: params[2] })
-                            .then(() => console.log('sucess'))
-                    })
+                        })
+                    }
                 })
             } else {
-                client.chatMessage(steamID, 'Your balance is too low')
+                clientSteam.chatMessage(steamID, 'Your balance is too low')
             }
         })
         .catch((e) => {
-            client.chatMessage(steamID, 'Oups an error has occured')
+            console.log(e)
+            clientSteam.chatMessage(steamID, 'Oups an error has occured')
         })
 }
 

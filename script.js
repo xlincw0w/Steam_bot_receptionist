@@ -93,13 +93,13 @@ client.on('friendMessage', async function (steamID3, message) {
             break
 
         case message.split(' ')[0] === '!deposit':
-            res = await HandleDeposit(steamID, getParams(message), CoinbaseClient)
-            client.chatMessage(steamID, 'res.msg')
+            res = await HandleDeposit(steamID, getParams(message), CoinbaseClient, client)
+            //client.chatMessage(steamID, 'res.msg')
             break
 
         case message.split(' ')[0] === '!withdraw':
-            res = await HandleWithdraw(steamID, getParams(message), CoinbaseClient)
-            client.chatMessage(steamID, res.msg)
+            res = await HandleWithdraw(steamID, getParams(message), CoinbaseClient, client)
+            // client.chatMessage(steamID, res.msg)
             break
 
         case message.split(' ')[0] === '!prices':
