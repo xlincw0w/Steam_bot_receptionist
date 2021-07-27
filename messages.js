@@ -12,7 +12,7 @@ module.exports = {
     deposit: 'Deposit',
     withdraw: 'Withdraw',
     price: 'Price',
-    fees: 'Fees',
+    fees: 'Fees :\n\n=> If the total transaction amount is less than or equal to $10, the fee is $0.99\n=> If the total transaction amount is more than $10 but less than or equal to $25, the fee is $1.49\n=> If the total transaction amount is more than $25 but less than or equal to $50, the fee is $1.99\n=> If the total transaction amount is more than $50 but less than or equal to $200, the fee is $2.99',
     mins: 'Mins',
     balance: 'Balance',
     stock: 'Stock',

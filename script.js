@@ -18,9 +18,20 @@ var CoinbaseClient = new Client({ apiKey: process.env.COINBASE_API_KEY, apiSecre
 
 // Actions
 const { getParams } = require('./utilities')
-const { HandlePurchase, HandleSell, HandleDeposit, HandleWithdraw, SetBuyPrice, SetSellPrice, SetWithdrawalFees, SetWithdrawalMin } = require('./actions/transactions')
-const { GetBalance } = require('./actions/userdata')
-const { GetPrices, GetFees, GetMinWithdrawal, GetOwner, GetBuyCost, GetSellCost, GetStock, GetExchanges } = require('./actions/fetchdata')
+const {
+    HandlePurchase,
+    HandleSell,
+    HandleDeposit,
+    HandleWithdraw,
+    SetBuyPrice,
+    SetSellPrice,
+    SetWithdrawalFees,
+    SetWithdrawalMin,
+    BuyAmount,
+    SellAmount,
+} = require('./actions/transactions')
+const { GetBalance, SetTradeLink } = require('./actions/userdata')
+const { GetPrices, GetFees, GetMinWithdrawal, GetOwner, GetBuyCost, GetSellCost, GetStock, GetExchanges, BuyAlert, SellAlert } = require('./actions/fetchdata')
 
 const client = new SteamUser()
 const community = new SteamCommunity()
@@ -92,12 +103,13 @@ client.on('friendMessage', async function (steamID3, message) {
             break
 
         case message.split(' ')[0] === '!prices':
-            res = await GetPrices()
+            res = await GetPrices(getParams(message))
+            console.log(res)
             client.chatMessage(steamID, res)
             break
 
         case message.split(' ')[0] === '!fees':
-            res = await GetFees()
+            res = await GetFees(CoinbaseClient)
             client.chatMessage(steamID, res)
             break
 
@@ -130,6 +142,16 @@ client.on('friendMessage', async function (steamID3, message) {
             client.chatMessage(steamID, res)
             break
 
+        case message.split(' ')[0] === '!buyalert':
+            res = await BuyAlert(steamID, getParams(message))
+            client.chatMessage(steamID, res)
+            break
+
+        case message.split(' ')[0] === '!sellalert':
+            res = await SellAlert(steamID, getParams(message))
+            client.chatMessage(steamID, res)
+            break
+
         case message.split(' ')[0] === '!setbuyprice':
             res = await SetBuyPrice(steamID, getParams(message))
             client.chatMessage(steamID, res)
@@ -137,6 +159,16 @@ client.on('friendMessage', async function (steamID3, message) {
 
         case message.split(' ')[0] === '!setsellprice':
             res = await SetSellPrice(steamID, getParams(message))
+            client.chatMessage(steamID, res)
+            break
+
+        case message.split(' ')[0] === '!buyamount':
+            res = await BuyAmount(steamID, getParams(message))
+            client.chatMessage(steamID, res)
+            break
+
+        case message.split(' ')[0] === '!sellamount':
+            res = await SellAmount(steamID, getParams(message))
             client.chatMessage(steamID, res)
             break
 
@@ -156,6 +188,10 @@ client.on('friendMessage', async function (steamID3, message) {
 
         case message.split(' ')[0] === '!support':
             client.chatMessage(steamID, answers.support)
+            break
+
+        case message.split(' ')[0] === '!settradelink':
+            res = await SetTradeLink(steamID, getParams(message), client)
             break
 
         default:
@@ -195,7 +231,7 @@ client.on('friendRelationship', async (steamID3, relationship) => {
             })
 
             client.addFriend(steamID)
-            client.chatMessage(steamID, 'Hello! Type !commands in the input chat.')
+            client.chatMessage(steamID, 'Hello! Type !commands in the input chat.\nPlease provide your trade link !settradelink <trade link>')
         } catch (err) {
             console.log(err)
         }
