@@ -45,3 +45,34 @@ module.exports.provideToken = async (steamID, token) => {
         })
         .catch((e) => console.log(e))
 }
+
+module.exports.handleSupport = async (steamID, params, client) => {
+    if (params.length >= 2) {
+        let request = ''
+
+        for (let i = 1; i < params.length; i++) {
+            request += ' ' + params[i]
+        }
+
+        client.chat.sendFriendMessage(process.env.ADMIN_STEAMID64, `${request}\n\nhttps://steamcommunity.com/profiles/${steamID}/`, () => {
+            client.chat.sendFriendMessage(
+                steamID,
+                `Successfully send your support message to our admin, we will response to it as soon as possible.
+Message to admin.
+Support Message : ${request}
+https://steamcommunity.com/profiles/${process.env.ADMIN_STEAMID64}/
+`
+            )
+        })
+        client.chat.sendFriendMessage(
+            steamID,
+            `Successfully send your support message to our admin, we will response to it as soon as possible.
+Message to admin.
+Support Message : ${request}
+https://steamcommunity.com/profiles/${process.env.ADMIN_STEAMID64}/
+`
+        )
+    } else {
+        client.chat.sendFriendMessage(steamID, '\nPlease type a message\n\n!support <message>')
+    }
+}

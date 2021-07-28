@@ -30,7 +30,7 @@ const {
     BuyAmount,
     SellAmount,
 } = require('./actions/transactions')
-const { GetBalance, SetTradeLink } = require('./actions/userdata')
+const { GetBalance, SetTradeLink, handleSupport } = require('./actions/userdata')
 const { GetPrices, GetFees, GetMinWithdrawal, GetOwner, GetBuyCost, GetSellCost, GetStock, GetExchanges, BuyAlert, SellAlert, GetStockValue } = require('./actions/fetchdata')
 
 const client = new SteamUser()
@@ -80,7 +80,7 @@ client.on('friendMessage', async function (steamID3, message) {
             break
 
         case message.split(' ')[0] === '!how2buy':
-            client.chatMessage(steamID, answer.how2buy)
+            client.chatMessage(steamID, answers.how2buy)
             break
 
         case message.split(' ')[0] === '!how2sell':
@@ -109,7 +109,6 @@ client.on('friendMessage', async function (steamID3, message) {
 
         case message.split(' ')[0] === '!prices':
             res = await GetPrices(getParams(message))
-            console.log(res)
             client.chatMessage(steamID, res)
             break
 
@@ -196,7 +195,7 @@ client.on('friendMessage', async function (steamID3, message) {
             break
 
         case message.split(' ')[0] === '!support':
-            client.chatMessage(steamID, answers.support)
+            handleSupport(steamID, getParams(message), client)
             break
 
         case message.split(' ')[0] === '!settradelink':
