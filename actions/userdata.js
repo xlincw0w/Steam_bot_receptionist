@@ -20,7 +20,7 @@ module.exports.SetTradeLink = async function SetTradeLink(steamID, params, clien
             })
     } else {
         let res = {
-            msg: 'Please provide a trade link.\n\nWhere to find trade link\n\nhttps://steamcommunity.com/profiles/steam64/tradeoffers/privacy#trade_offer_access_url',
+            msg: `Please provide a trade link.\n\n!settradelink <yourtradelink>\n\nWhere to find trade link\nhttps://steamcommunity.com/profiles/${steamID}/tradeoffers/privacy#trade_offer_access_url`,
         }
         client.chatMessage(steamID, res.msg)
     }

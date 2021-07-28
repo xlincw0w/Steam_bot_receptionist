@@ -4,7 +4,7 @@ const { GetBalance } = require('./userdata')
 const { find } = require('lodash')
 
 const { GetConfigValues, SetConfigFile } = require('../utilities')
-const { GetExchanges } = require('./fetchdata')
+const { GetExchanges, GetStockValue } = require('./fetchdata')
 
 const axios = require('axios')
 const { db } = require('../db/dbconfig')
@@ -107,37 +107,45 @@ module.exports.HandleSell = async function HandleSell(steamID, params) {
     exchange = exchange.filter((elem) => elem.symbol === currency)[0]
 
     let config = GetConfigValues()
+    const stock = GetStockValue()
 
     const total_price = (1 / exchange.quotes.USD.price) * config.KEY_PRICE_SELL * amount
 
-    try {
-        db.transaction(async (trx) => {
-            await db('sales')
-                .insert({
-                    id_supplier: balance.id_client,
-                    id_currency: balance.id_currency,
-                    price: total_price,
-                    state: 'pending',
-                    amount,
-                })
-                .transacting(trx)
-
-            await db('balances')
-                .update({
-                    balance: balance.balance + total_price,
-                })
-                .where({ id_client: balance.id_client, id_currency: balance.id_currency })
-                .transacting(trx)
-        })
-        return {
-            purchase: true,
-            msg: `Your sale is in a pending state.\n\nPlease sent a trade offert here with ${amount} keys on it\nTrade link : https://steamcommunity.com/tradeoffer/new/?partner=1232482096&token=yicdXQMK`,
-        }
-    } catch (err) {
-        console.log(err)
+    if (stock + amount > process.env.STOCK_LIMIT) {
         return {
             purchase: false,
-            msg: `Your sale was failed.\n\n The transaction had a technical problem please retry later.\n\nBalance : ${balance.code} ${balance.balance - total_price}`,
+            msg: `Your sale failed.\n\n Stock limit reached.`,
+        }
+    } else {
+        try {
+            db.transaction(async (trx) => {
+                await db('sales')
+                    .insert({
+                        id_supplier: balance.id_client,
+                        id_currency: balance.id_currency,
+                        price: total_price,
+                        state: 'pending',
+                        amount,
+                    })
+                    .transacting(trx)
+
+                await db('balances')
+                    .update({
+                        balance: balance.balance + total_price,
+                    })
+                    .where({ id_client: balance.id_client, id_currency: balance.id_currency })
+                    .transacting(trx)
+            })
+            return {
+                purchase: true,
+                msg: `Your sale is in a pending state.\n\nPlease sent a trade offert here with ${amount} keys on it\nTrade link : https://steamcommunity.com/tradeoffer/new/?partner=1232482096&token=yicdXQMK`,
+            }
+        } catch (err) {
+            console.log(err)
+            return {
+                purchase: false,
+                msg: `Your sale failed.\n\n The transaction had a technical problem please retry later.\n\nBalance : ${balance.code} ${balance.balance - total_price}`,
+            }
         }
     }
 }

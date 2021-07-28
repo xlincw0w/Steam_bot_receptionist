@@ -128,11 +128,9 @@ module.exports.GetBuyCost = async function GetBuyCost(params) {
             if (!constants.num_rg.test(params[1])) return 'Invalid parameters\n\n<key amount> should be a number'
             //const currencies = ['BTC', 'ADA', 'ETH', 'LTC', 'DOGE', 'BCH', 'DOT', 'USDC ', 'USDT']
             const currencies = await GetCurrencies()
-            console.log(currencies)
-            let messages = `if you Buy ${params[1]} keys you will get ${params[1] * KEY_PRICE_BUY}$ \n \n`
+            let messages = `if you Buy ${params[1]} keys you will pay ${params[1] * KEY_PRICE_BUY}$ \n \n`
             currencies.forEach((currency) => {
                 const exchange = find(data, { symbol: currency.code })
-                console.log('exchange : ', exchange)
                 const buycost = ((params[1] * KEY_PRICE_BUY) / exchange.quotes.USD.price).toFixed(8)
                 messages = messages.concat(`${buycost} ${currency.code}\n  `)
             })
@@ -141,10 +139,9 @@ module.exports.GetBuyCost = async function GetBuyCost(params) {
         } else {
             if (params.length == 1) {
                 const currencies = await GetCurrencies()
-                let messages = `if you buy 1 keys you will get ${KEY_PRICE_BUY}$ \n \n`
+                let messages = `if you buy 1 keys you will pay ${KEY_PRICE_BUY}$ \n \n`
                 currencies.forEach((currency) => {
                     const exchange = find(data, { symbol: currency.code })
-                    console.log('exchange : ', exchange)
                     const buycost = (KEY_PRICE_BUY / exchange.quotes.USD.price).toFixed(8)
                     messages = messages.concat(`${buycost} ${currency.code}\n  `)
                 })
@@ -182,7 +179,6 @@ module.exports.GetSellCost = async function GetSellCost(params) {
             let messages = `if you sell ${params[1]} keys you will get ${params[1] * KEY_PRICE_SELL}$ \n \n`
             currencies.forEach((currency) => {
                 const exchange = find(data, { symbol: currency.code })
-                console.log('exchange : ', exchange)
                 const sellcost = ((params[1] * KEY_PRICE_SELL) / exchange.quotes.USD.price).toFixed(8)
                 messages = messages.concat(`${sellcost} ${currency.code}\n  `)
             })
@@ -194,7 +190,6 @@ module.exports.GetSellCost = async function GetSellCost(params) {
                 let messages = `if you sell 1 keys you will get ${KEY_PRICE_SELL}$ \n \n`
                 currencies.forEach((currency) => {
                     const exchange = find(data, { symbol: currency.code })
-                    console.log('exchange : ', exchange)
                     const sellcost = (KEY_PRICE_SELL / exchange.quotes.USD.price).toFixed(8)
                     messages = messages.concat(`${sellcost} ${currency.code}\n  `)
                 })
