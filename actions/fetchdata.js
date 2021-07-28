@@ -48,7 +48,7 @@ module.exports.GetPrices = async function GetPrices(params) {
     } else {
         let { KEY_PRICE_BUY, KEY_PRICE_SELL } = GetConfigValues()
 
-        let response = `Prices : \n\n✹ Buying [Team fortress 2] KEY => ${KEY_PRICE_BUY}$\n✹ Selling [Team fortress 2] KEY => ${KEY_PRICE_SELL}$\n\n`
+        let response = ``
 
         const balance = await GetCurrencies()
         const data = await GetExchanges()
@@ -56,6 +56,18 @@ module.exports.GetPrices = async function GetPrices(params) {
         data.map((elem) => {
             if (find(balance, { code: elem.symbol })) {
                 response += `✹ ${elem.name} 1.0${elem.symbol} = ${elem.quotes.USD.price}$\n`
+            }
+        })
+        response += `\n i buy 1 key for ${KEY_PRICE_BUY} $ \n\n `
+        data.map((elem) => {
+            if (find(balance, { code: elem.symbol })) {
+                response += `✹ ${(KEY_PRICE_BUY / elem.quotes.USD.price).toFixed(8)} ${elem.symbol} \n`
+            }
+        })
+        response += `\n i sell 1 key for ${KEY_PRICE_SELL} $ \n\n `
+        data.map((elem) => {
+            if (find(balance, { code: elem.symbol })) {
+                response += `✹ ${(KEY_PRICE_SELL / elem.quotes.USD.price).toFixed(8)} ${elem.symbol} \n`
             }
         })
 
@@ -121,6 +133,18 @@ module.exports.GetBuyCost = async function GetBuyCost(params) {
             return messages.concat(` \n \nIf you want to Buy this amount now, type !buy ${params[1]} <cryptocurrency>
             `)
         } else {
+            if (params.length == 1) {
+                const currencies = await GetCurrencies()
+                let messages = `if you buy 1 keys you will get ${KEY_PRICE_BUY}$ \n \n`
+                currencies.forEach((currency) => {
+                    const exchange = find(data, { symbol: currency.code })
+                    console.log('exchange : ', exchange)
+                    const buycost = (KEY_PRICE_BUY / exchange.quotes.USD.price).toFixed(8)
+                    messages = messages.concat(`${buycost} ${currency.code}\n  `)
+                })
+                return messages.concat(` \n \nIf you want to buy this amount now, type !sell <keys> <cryptocurrency>
+                `)
+            }
             return 'Invalid parameters\n\nPlease make sure you type !buycost <key amount> <cryptocurrency> Or\n\nPlease make sure you type !buycost <key amount>.'
         }
     }
@@ -149,7 +173,6 @@ module.exports.GetSellCost = async function GetSellCost(params) {
             if (!constants.num_rg.test(params[1])) return 'Invalid parameters\n\n<key amount> should be a number'
             //const currencies = ['BTC', 'ADA', 'ETH', 'LTC', 'DOGE', 'BCH', 'DOT', 'USDC ', 'USDT']
             const currencies = await GetCurrencies()
-            console.log(currencies)
             let messages = `if you sell ${params[1]} keys you will get ${params[1] * KEY_PRICE_SELL}$ \n \n`
             currencies.forEach((currency) => {
                 const exchange = find(data, { symbol: currency.code })
@@ -160,6 +183,18 @@ module.exports.GetSellCost = async function GetSellCost(params) {
             return messages.concat(` \n \nIf you want to sell this amount now, type !sell ${params[1]} <cryptocurrency>
             `)
         } else {
+            if (params.length == 1) {
+                const currencies = await GetCurrencies()
+                let messages = `if you sell 1 keys you will get ${KEY_PRICE_SELL}$ \n \n`
+                currencies.forEach((currency) => {
+                    const exchange = find(data, { symbol: currency.code })
+                    console.log('exchange : ', exchange)
+                    const sellcost = (KEY_PRICE_SELL / exchange.quotes.USD.price).toFixed(8)
+                    messages = messages.concat(`${sellcost} ${currency.code}\n  `)
+                })
+                return messages.concat(` \n \nIf you want to sell this amount now, type !sell <keys> <cryptocurrency>
+                `)
+            }
             return 'Invalid parameters\n\nPlease make sure you type !sellcost <key amount> <cryptocurrency> Or\n\nPlease make sure you type !sellcost <key amount>.'
         }
     }
