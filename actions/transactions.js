@@ -34,7 +34,13 @@ module.exports.HandlePurchase = async function HandlePurchase(steamID, params) {
     const total_price = (1 / exchange.quotes.USD.price) * config.KEY_PRICE_BUY * amount
 
     if (balance.balance < total_price) {
-        return { purchase: false, msg: `Your purchase failed.\n\n Your balance is low please consider a withdrawal !withdraw for more information.\n\n${balance.response}` }
+        return {
+            purchase: false,
+            msg: `Your purchase failed.\n\n You dont have enough balance to buy ${amount} keys!\n It costs ${config.KEY_PRICE_BUY * amount} $ or ${(
+                (config.KEY_PRICE_BUY / exchange.quotes.USD.price) *
+                amount
+            ).toFixed(8)} ${exchange.symbol}\nmeanwhile you only have ${balance.balance.toFixed(8)} BTC.`,
+        }
     } else {
         let res = await axios.post(process.env.HACHI_STORE_API + '/trade', {
             steamID,
@@ -63,12 +69,17 @@ module.exports.HandlePurchase = async function HandlePurchase(steamID, params) {
 
                 return {
                     purchase: true,
-                    msg: `Your purchase was validated.\n\n An offer has been sent to you account.\n\nBalance : ${balance.code} ${balance.balance - total_price}`,
+                    msg: `Your purchase was validated.\n\n It cost ${amount * config.KEY_PRICE_BUY} $ or ${total_price.toFixed(
+                        8
+                    )} BTC for ${amount} Keys\nAn offer has been sent to you account.\n\nBalance : ${balance.code} ${balance.balance - total_price}`,
                 }
             } catch (err) {
+                console.log(err)
                 return {
                     purchase: false,
-                    msg: `Your purchase was failed.\n\n The transaction had a technical problem please retry later.\n\nBalance : ${balance.code} ${balance.balance - total_price}`,
+                    msg: `Your purchase was failed.\n\n The transaction had a technical problem please retry later.\n\nBalance : ${balance.code} ${(
+                        balance.balance - total_price
+                    ).toFixed(8)}`,
                 }
             }
         } else {
@@ -161,14 +172,11 @@ module.exports.HandleDeposit = async function HandleSell(steamID, params, client
             console.log(WalletAccount[0])
 
             client.getAccount(WalletAccount[0].id, async function (err, account) {
-                // console.log(account)
                 account.createAddress(null, function (err, address) {
                     console.log(address)
                     if (err) {
-                        console.log('dd')
                         console.log(err)
                     } else {
-                        console.log(address.address)
                         db('clients')
                             .update({ specific_address: address.address })
                             .where({ steam_id: steamID })
@@ -309,5 +317,34 @@ module.exports.SetWithdrawalMin = async function SetWithdrawalMin(steamID, param
         return `Admin : \n\n✹ Sell price updated to ${params[1]}`
     } else {
         return `Admin : \n\n✹ Operation not allowed !`
+    }
+}
+
+module.exports.BuyAmount = async function BuyAmount(steamID, params) {
+    if (params.length === 3) {
+        let { KEY_PRICE_BUY, KEY_PRICE_SELL } = GetConfigValues()
+
+        let data = await GetExchanges()
+        data = data.filter((elem) => elem.symbol === params[2].toUpperCase())
+
+        console.log(KEY_PRICE_BUY)
+        console.log(data)
+
+        return `With ${params[1]} ${params[2]}\nBuy price : ${KEY_PRICE_BUY}\n\nYou can get ${Math.floor(params[1] / (KEY_PRICE_BUY / data[0].quotes.USD.price))} keys`
+    } else {
+        return 'Incorrect parameters !buyamount <crypto amount> <cryptocurrency>'
+    }
+}
+
+module.exports.SellAmount = async function SellAmount(steamID, params) {
+    if (params.length === 3) {
+        let { KEY_PRICE_BUY, KEY_PRICE_SELL } = GetConfigValues()
+
+        let data = await GetExchanges()
+        data = data.filter((elem) => elem.symbol === params[2].toUpperCase())
+
+        return `To get ${params[1]} ${params[2]}\nBuy price : ${KEY_PRICE_SELL}\n\nYou need ${Math.floor(params[1] / (KEY_PRICE_SELL / data[0].quotes.USD.price))} keys`
+    } else {
+        return 'Incorrect parameters !buyamount <crypto amount> <cryptocurrency>'
     }
 }

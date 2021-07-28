@@ -30,26 +30,49 @@ module.exports.GetStock = async function GetStock() {
     return response
 }
 
-module.exports.GetPrices = async function GetPrices() {
-    let { KEY_PRICE_BUY, KEY_PRICE_SELL } = GetConfigValues()
+module.exports.GetPrices = async function GetPrices(params) {
+    if (params.length > 1) {
+        let { KEY_PRICE_BUY, KEY_PRICE_SELL } = GetConfigValues()
+        const balance = await GetCurrencies()
+        let data = await GetExchanges()
+        data = data.filter((elem) => elem.symbol === params[1].toUpperCase())
 
-    let response = `Prices : \n\n✹ Buying [Team fortress 2] KEY => ${KEY_PRICE_BUY}$\n✹ Selling [Team fortress 2] KEY => ${KEY_PRICE_SELL}$\n\n`
+        if (data.length === 0) return 'Please type a correct currency'
 
-    const balance = await GetCurrencies()
-    const data = await GetExchanges()
+        let response = `Cryptocurrency prices :\n\n 1${data[0].symbol} = ${data[0].quotes.USD.price}$\n\n I buy 1 key ${KEY_PRICE_BUY}$\n ${(
+            KEY_PRICE_BUY / data[0].quotes.USD.price
+        ).toFixed(8)} ${data[0].symbol}\n\n
+        I sell 1 key ${KEY_PRICE_SELL}$\n ${(KEY_PRICE_SELL / data[0].quotes.USD.price).toFixed(8)} ${data[0].symbol}`
 
-    data.map((elem) => {
-        if (find(balance, { code: elem.symbol })) {
-            response += `✹ ${elem.name} 1.0${elem.symbol} = ${elem.quotes.USD.price}$\n`
-        }
-    })
+        return response
+    } else {
+        let { KEY_PRICE_BUY, KEY_PRICE_SELL } = GetConfigValues()
 
-    return response
+        let response = `Prices : \n\n✹ Buying [Team fortress 2] KEY => ${KEY_PRICE_BUY}$\n✹ Selling [Team fortress 2] KEY => ${KEY_PRICE_SELL}$\n\n`
+
+        const balance = await GetCurrencies()
+        const data = await GetExchanges()
+
+        data.map((elem) => {
+            if (find(balance, { code: elem.symbol })) {
+                response += `✹ ${elem.name} 1.0${elem.symbol} = ${elem.quotes.USD.price}$\n`
+            }
+        })
+
+        return response
+    }
 }
 
-module.exports.GetFees = async function GetFees() {
+module.exports.GetFees = async function GetFees(coinbase) {
     let { WITHDRAWAL_FEES } = GetConfigValues()
-    let response = `Fees : \n\n✹ Withdrawal fees => ${WITHDRAWAL_FEES}\n\n`
+    // let response = `Fees : \n\n✹ Withdrawal fees => ${WITHDRAWAL_FEES}\n\n`
+
+    // coinbase.getSellPrice({ currencyPair: 'BTC-USD' }, function (err, price) {
+    //     console.log(price)
+    // })
+
+    let response =
+        'Fees :\n\n=> If the total transaction amount is less than or equal to $10, the fee is $0.99\n=> If the total transaction amount is more than $10 but less than or equal to $25, the fee is $1.49\n=> If the total transaction amount is more than $25 but less than or equal to $50, the fee is $1.99\n=> If the total transaction amount is more than $50 but less than or equal to $200, the fee is $2.99\n\nThese fees will not apply if you have Coinbase and use your Coinbase email while withdrawing.'
     return response
 }
 
@@ -139,5 +162,41 @@ module.exports.GetSellCost = async function GetSellCost(params) {
         } else {
             return 'Invalid parameters\n\nPlease make sure you type !sellcost <key amount> <cryptocurrency> Or\n\nPlease make sure you type !sellcost <key amount>.'
         }
+    }
+}
+
+module.exports.BuyAlert = async function BuyAlert(steamID, params) {
+    let fetchapi = await axios.get(process.env.HACHI_STORE_API + '/stock')
+    let response = 'Stock available : \n\n✹ Keys ' + fetchapi.data.keys
+
+    if (params.length === 2) {
+        if (fetchapi.data.keys > parseInt(params[1])) return `Already available in stock you can buy ${params[1]} keys right now.`
+        else {
+            await db('clients')
+                .update({ buyalert: parseInt(params[1]) })
+                .where({ steam_id: steamID })
+
+            return 'Succesfully subscribed to buy alert.'
+        }
+    } else {
+        return 'Please type keys amount'
+    }
+}
+
+module.exports.SellAlert = async function SellAlert(steamID, params) {
+    let fetchapi = await axios.get(process.env.HACHI_STORE_API + '/stock')
+    let response = 'Stock available : \n\n✹ Keys ' + fetchapi.data.keys
+
+    if (params.length === 2) {
+        if (fetchapi.data.keys + parseInt(params[1]) < process.env.STOCK_LIMIT) return `You can sell ${params[1]} keys right now.`
+        else {
+            await db('clients')
+                .update({ sellalert: parseInt(params[1]) })
+                .where({ steam_id: steamID })
+
+            return 'Successfully subscribed to sell alert.'
+        }
+    } else {
+        return 'Please type keys amount'
     }
 }
