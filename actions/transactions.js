@@ -137,30 +137,29 @@ module.exports.HandleSell = async function HandleSell(steamID, params) {
 }
 
 module.exports.HandleDeposit = async function HandleSell(steamID, params, client, clientSteam) {
-    if (params.length !== 3) return { deposit: false, msg: 'Invalid parameters\n\nPlease make sure you type !deposit <crypto amount> <cryptocurrency>.' }
-    if (!constants.float_rg.test(params[1])) return { deposit: false, msg: 'Invalid parameters\n\n<crypto amount> should be a real' }
+    if (params.length !== 2) {
+        clientSteam.chatMessage(steamID, 'Invalid parameters\n\nPlease make sure you type !deposit <cryptocurrency>.')
+        return false
+    }
 
     const currencies = await GetCurrencies()
-    if (!constants.alph_rg.test(params[2])) return { deposit: false, msg: 'Invalid parameters\n\n<cryptocurrency> should be a currency\nExample ' + currencies[0].code }
-    if (!find(currencies, { code: params[2].toUpperCase() })) return { deposit: false, msg: 'Invalid parameters\n\n<cryptocurrency> does not exist\nExample ' + currencies[0].code }
-
-    let amount = params[1]
-    let currency = params[2].toUpperCase()
-
-    // console.log(currency, amount)
-
-    const balance = await GetBalance(steamID)
-    const state = {
-        amount: amount,
-        steamID: steamID,
-        currency: currency,
+    if (!constants.alph_rg.test(params[1])) {
+        clientSteam.chatMessage(steamID, 'Invalid parameters\n\n<cryptocurrency> should be a currency\nExample ' + currencies[0].code)
+        return false
     }
+    if (!find(currencies, { code: params[1].toUpperCase() })) {
+        clientSteam.chatMessage(steamID, 'Invalid parameters\n\n<cryptocurrency> does not exist\nExample ' + currencies[0].code)
+        return false
+    }
+
+    let currency = params[1].toUpperCase()
 
     client.getAccounts({}, async function (err, accounts) {
         if (err) {
             console.log(err)
         } else {
             const WalletAccount = accounts.filter((elem) => {
+                //console.log(elem.currency)
                 return elem.currency == currency
             })
             console.log(WalletAccount[0])
@@ -175,7 +174,7 @@ module.exports.HandleDeposit = async function HandleSell(steamID, params, client
                             .update({ specific_address: address.address })
                             .where({ steam_id: steamID })
                             .catch((e) => console.log(e))
-                        clientSteam.chatMessage(steamID, `your address :${address.address}`)
+                        clientSteam.chatMessage(steamID, `In order to deposit, you can send ANY amount you want to your personal address :\n${address.address}`)
                     }
                 })
                 // if (err) {
@@ -200,16 +199,28 @@ module.exports.HandleDeposit = async function HandleSell(steamID, params, client
 module.exports.HandleWithdraw = async function HandleSell(steamID, params, client, clientSteam) {
     let address_or_email = null
 
-    if (params.length !== 4) return { withdraw: false, msg: 'Invalid parameters\n\nPlease make sure you type !withdraw <crypto amount> <cryptocurrency> <address/coinbase email>.' }
-    if (!constants.float_rg.test(params[1])) return { withdraw: false, msg: 'Invalid parameters\n\n<crypto amount> should be a real' }
+    if (params.length !== 4) {
+        clientSteam.chatMessage(steamID, 'Invalid parameters\n\nPlease make sure you type !withdraw <crypto amount> <cryptocurrency> <address/coinbase email>.')
+        return false
+    }
+
+    if (!constants.float_rg.test(params[1])) {
+        clientSteam.chatMessage(steamID, 'Invalid parameters\n\n<crypto amount> should be a real')
+        return false
+    }
 
     const currencies = await GetCurrencies()
-    if (!constants.alph_rg.test(params[2])) return { withdraw: false, msg: 'Invalid parameters\n\n<cryptocurrency> should be a currency\nExample ' + currencies[0].code }
+    if (!constants.alph_rg.test(params[2])) {
+        clientSteam.chatMessage(steamID, 'Invalid parameters\n\n<cryptocurrency> should be a currency\nExample ' + currencies[0].code)
+        return false
+    }
 
     constants.email_rg.test(params[3]) ? (address_or_email = 'coinbase_email') : (address_or_email = 'address')
 
-    if (!find(currencies, { code: params[2].toUpperCase() }))
-        return { withdraw: false, msg: 'Invalid parameters\n\n<cryptocurrency> does not exist\nExample ' + currencies[0].code }
+    if (!find(currencies, { code: params[2].toUpperCase() })) {
+        clientSteam.chatMessage(steamID, 'Invalid parameters\n\n<cryptocurrency> does not exist\nExample ' + currencies[0].code)
+        return false
+    }
 
     let amount = params[1]
     let currency = params[2].toUpperCase()

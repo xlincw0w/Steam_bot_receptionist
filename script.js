@@ -61,11 +61,14 @@ client.on('loggedOn', async () => {
 
     // client.enableTwoFactor(() => {})
     client.setPersona(SteamUser.EPersonaState.Online)
+    // try {
+    //     const prices = await GetConfigValues()
+    //     const stock = await GetStockValue()
 
-    const prices = await GetConfigValues()
-    const stock = await GetStockValue()
-
-    client.gamesPlayed(`[B: $${prices.KEY_PRICE_BUY}] [S: $${prices.KEY_PRICE_SELL}] [Stock: ${stock}/${process.env.STOCK_LIMIT}]`)
+    //     client.gamesPlayed(`[B: $${prices.KEY_PRICE_BUY}] [S: $${prices.KEY_PRICE_SELL}] [Stock: ${stock}/${process.env.STOCK_LIMIT}]`)
+    // } catch (e) {
+    //     console.log(e)
+    // }
 })
 
 client.on('friendsList', () => {})
@@ -98,12 +101,12 @@ client.on('friendMessage', async function (steamID3, message) {
             break
 
         case message.split(' ')[0] === '!deposit':
-            res = await HandleDeposit(steamID, getParams(message), CoinbaseClient, client)
-            //client.chatMessage(steamID, 'res.msg')
+            await HandleDeposit(steamID, getParams(message), CoinbaseClient, client)
+            // client.chatMessage(steamID, res.msg)
             break
 
         case message.split(' ')[0] === '!withdraw':
-            res = await HandleWithdraw(steamID, getParams(message), CoinbaseClient, client)
+            await HandleWithdraw(steamID, getParams(message), CoinbaseClient, client)
             // client.chatMessage(steamID, res.msg)
             break
 
