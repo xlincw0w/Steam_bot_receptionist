@@ -31,7 +31,7 @@ const {
     SellAmount,
 } = require('./actions/transactions')
 const { GetBalance, SetTradeLink } = require('./actions/userdata')
-const { GetPrices, GetFees, GetMinWithdrawal, GetOwner, GetBuyCost, GetSellCost, GetStock, GetExchanges, BuyAlert, SellAlert } = require('./actions/fetchdata')
+const { GetPrices, GetFees, GetMinWithdrawal, GetOwner, GetBuyCost, GetSellCost, GetStock, GetExchanges, BuyAlert, SellAlert, GetStockValue } = require('./actions/fetchdata')
 
 const client = new SteamUser()
 const community = new SteamCommunity()
@@ -56,11 +56,16 @@ const logOnOptions = {
 
 client.logOn(logOnOptions)
 
-client.on('loggedOn', () => {
+client.on('loggedOn', async () => {
     console.log('Hachi bot logged in')
 
-    client.enableTwoFactor(() => {})
+    // client.enableTwoFactor(() => {})
     client.setPersona(SteamUser.EPersonaState.Online)
+
+    const prices = await GetConfigValues()
+    const stock = await GetStockValue()
+
+    client.gamesPlayed(`[B: $${prices.KEY_PRICE_BUY}] [S: $${prices.KEY_PRICE_SELL}] [Stock: ${stock}/${process.env.STOCK_LIMIT}]`)
 })
 
 client.on('friendsList', () => {})
@@ -71,11 +76,11 @@ client.on('friendMessage', async function (steamID3, message) {
     let res = ''
     switch (true) {
         case message.split(' ')[0] === '!commands':
-            client.chatMessage(steamID, answers.commands_shortened)
+            client.chatMessage(steamID, answers.commands)
             break
 
         case message.split(' ')[0] === '!how2buy':
-            client.chatMessage(steamID, answers.how2buy)
+            client.chatMessage(steamID, answer.how2buy)
             break
 
         case message.split(' ')[0] === '!how2sell':
@@ -178,6 +183,10 @@ client.on('friendMessage', async function (steamID3, message) {
             client.chatMessage(steamID, res)
             break
 
+        case message.split(' ')[0] === '!giveaway':
+            client.chatMessage(steamID, answers.giveaway)
+            break
+
         case message.split(' ')[0] === '!token':
             res = await provideToken(steamID, message)
             client.chatMessage(steamID, res)
@@ -196,7 +205,7 @@ client.on('friendMessage', async function (steamID3, message) {
             break
 
         default:
-            client.chatMessage(steamID, answers.commands_shortened)
+            client.chatMessage(steamID, answers.commands)
             break
     }
 })
