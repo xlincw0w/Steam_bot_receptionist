@@ -127,6 +127,7 @@ client.on('friendMessage', async function (steamID3, message) {
 
         case message.split(' ')[0] === '!sellcost':
             res = await GetSellCost(getParams(message))
+            console.log(res)
             client.chatMessage(steamID, res)
             break
 

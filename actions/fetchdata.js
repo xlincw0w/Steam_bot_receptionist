@@ -67,45 +67,77 @@ module.exports.GetOwner = async function GetOwner() {
 module.exports.GetBuyCost = async function GetBuyCost(params) {
     let { KEY_PRICE_BUY, KEY_PRICE_SELL } = GetConfigValues()
 
-    if (params.length !== 3) return 'Invalid parameters\n\nPlease make sure you type !buycost <key amount> <cryptocurrency>.'
-    if (!constants.num_rg.test(params[1])) return 'Invalid parameters\n\n<key amount> should be a number'
-
     const currencies = await GetCurrencies()
-    if (!constants.alph_rg.test(params[2])) return 'Invalid parameters\n\n<cryptocurrency> should be a currency\nExample '
-    if (!find(currencies, { code: params[2].toUpperCase() })) return `Invalid parameters\n\n<cryptocurrency> does not exist\nExample ${currencies[0].code}`
 
     const data = await GetExchanges()
-
-    let exchange = find(data, { symbol: params[2].toUpperCase() })
-    const onedollar_to_cryto = 1 / exchange.quotes.USD.price
-    const buycost = onedollar_to_cryto * KEY_PRICE_BUY * parseInt(params[1])
-
-    const response = `Hachi BOT : \n\n✹ ${params[1]} Keys\n✹ One dollar of ${exchange.name} ${onedollar_to_cryto} \n\n✹ Buy cost : ${buycost} ${exchange.symbol} ( ${
-        KEY_PRICE_BUY * parseInt(params[1])
-    }$ )\n\n`
-
-    return response
+    if (params.length == 3) {
+        if (!constants.num_rg.test(params[1])) return 'Invalid parameters\n\n<key amount> should be a number'
+        if (!constants.alph_rg.test(params[2])) return 'Invalid parameters\n\n<cryptocurrency> should be a currency\nExample'
+        if (!find(currencies, { code: params[2].toUpperCase() })) return `Invalid parameters\n\n<cryptocurrency> does not exist\nExample ${currencies[0].code}`
+        if (!constants.alph_rg.test(params[2])) return 'Invalid parameters\n\n<cryptocurrency> should be a currency\nExample '
+        let exchange = find(data, { symbol: params[2].toUpperCase() })
+        const onedollar_to_cryto = (1 / exchange.quotes.USD.price).toFixed(8)
+        const buycost = (onedollar_to_cryto * KEY_PRICE_BUY * parseInt(params[1])).toFixed(8)
+        const response = `Hachi BOT : \n\n✹ ${params[1]} Keys\n✹ One dollar of ${exchange.name} ${onedollar_to_cryto} \n\n✹ Buy cost : ${buycost} ${exchange.symbol} ( ${
+            KEY_PRICE_BUY * parseInt(params[1])
+        }$ ) \n\n`
+        return response
+    } else {
+        if (params.length == 2) {
+            if (!constants.num_rg.test(params[1])) return 'Invalid parameters\n\n<key amount> should be a number'
+            //const currencies = ['BTC', 'ADA', 'ETH', 'LTC', 'DOGE', 'BCH', 'DOT', 'USDC ', 'USDT']
+            const currencies = await GetCurrencies()
+            console.log(currencies)
+            let messages = `if you Buy ${params[1]} keys you will get ${params[1] * KEY_PRICE_BUY}$ \n \n`
+            currencies.forEach((currency) => {
+                const exchange = find(data, { symbol: currency.code })
+                console.log('exchange : ', exchange)
+                const buycost = ((params[1] * KEY_PRICE_BUY) / exchange.quotes.USD.price).toFixed(8)
+                messages = messages.concat(`${buycost} ${currency.code}\n  `)
+            })
+            return messages.concat(` \n \nIf you want to Buy this amount now, type !buy ${params[1]} <cryptocurrency>
+            `)
+        } else {
+            return 'Invalid parameters\n\nPlease make sure you type !buycost <key amount> <cryptocurrency> Or\n\nPlease make sure you type !buycost <key amount>.'
+        }
+    }
 }
 
 module.exports.GetSellCost = async function GetSellCost(params) {
     let { KEY_PRICE_BUY, KEY_PRICE_SELL } = GetConfigValues()
 
-    if (params.length !== 3) return 'Invalid parameters\n\nPlease make sure you type !sellcost <key amount> <cryptocurrency>.'
-    if (!constants.num_rg.test(params[1])) return 'Invalid parameters\n\n<key amount> should be a number'
-
     const currencies = await GetCurrencies()
-    if (!constants.alph_rg.test(params[2])) return 'Invalid parameters\n\n<cryptocurrency> should be a currency\nExample '
-    if (!find(currencies, { code: params[2].toUpperCase() })) return `Invalid parameters\n\n<cryptocurrency> does not exist\nExample ${currencies[0].code}`
 
     const data = await GetExchanges()
-
-    let exchange = find(data, { symbol: params[2].toUpperCase() })
-    const onedollar_to_cryto = 1 / exchange.quotes.USD.price
-    const buycost = onedollar_to_cryto * KEY_PRICE_SELL * parseInt(params[1])
-
-    const response = `Hachi BOT : \n\n✹ ${params[1]} Keys\n✹ One dollar of ${exchange.name} ${onedollar_to_cryto} \n\n✹ Sell cost : ${buycost} ${exchange.symbol} ( ${
-        KEY_PRICE_SELL * parseInt(params[1])
-    }$ ) \n\n`
-
-    return response
+    if (params.length == 3) {
+        if (!constants.num_rg.test(params[1])) return 'Invalid parameters\n\n<key amount> should be a number'
+        if (!constants.alph_rg.test(params[2])) return 'Invalid parameters\n\n<cryptocurrency> should be a currency\nExample'
+        if (!find(currencies, { code: params[2].toUpperCase() })) return `Invalid parameters\n\n<cryptocurrency> does not exist\nExample ${currencies[0].code}`
+        if (!constants.alph_rg.test(params[2])) return 'Invalid parameters\n\n<cryptocurrency> should be a currency\nExample '
+        let exchange = find(data, { symbol: params[2].toUpperCase() })
+        const onedollar_to_cryto = (1 / exchange.quotes.USD.price).toFixed(8)
+        const sellcost = onedollar_to_cryto * KEY_PRICE_SELL * parseInt(params[1]).toFixed(8)
+        const response = `Hachi BOT : \n\n✹ ${params[1]} Keys\n✹ One dollar of ${exchange.name} ${onedollar_to_cryto} \n\n✹ Sell cost : ${sellcost} ${exchange.symbol} ( ${
+            KEY_PRICE_SELL * parseInt(params[1])
+        }$ ) \n\n`
+        return response
+    } else {
+        if (params.length == 2) {
+            if (!constants.num_rg.test(params[1])) return 'Invalid parameters\n\n<key amount> should be a number'
+            //const currencies = ['BTC', 'ADA', 'ETH', 'LTC', 'DOGE', 'BCH', 'DOT', 'USDC ', 'USDT']
+            const currencies = await GetCurrencies()
+            console.log(currencies)
+            let messages = `if you sell ${params[1]} keys you will get ${params[1] * KEY_PRICE_SELL}$ \n \n`
+            currencies.forEach((currency) => {
+                const exchange = find(data, { symbol: currency.code })
+                console.log('exchange : ', exchange)
+                const sellcost = ((params[1] * KEY_PRICE_SELL) / exchange.quotes.USD.price).toFixed(8)
+                messages = messages.concat(`${sellcost} ${currency.code}\n  `)
+            })
+            return messages.concat(` \n \nIf you want to sell this amount now, type !sell ${params[1]} <cryptocurrency>
+            `)
+        } else {
+            return 'Invalid parameters\n\nPlease make sure you type !sellcost <key amount> <cryptocurrency> Or\n\nPlease make sure you type !sellcost <key amount>.'
+        }
+    }
 }
