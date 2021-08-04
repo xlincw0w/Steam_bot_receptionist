@@ -81,6 +81,6 @@ Yanis Haned - anishaned@outlook.com
 ## Project Link: 
 Receptionist BOT [https://github.com/xlincw0w/Steam_bot_receptionist](https://github.com/xlincw0w/Steam_bot_receptionist)
 <br />
-STORE BOT [https://github.com/xlincw0w/Steam_bot_store](https://github.com/xlincw0w/Steam_bot_store)
+Store BOT [https://github.com/xlincw0w/Steam_bot_store](https://github.com/xlincw0w/Steam_bot_store)
 <br />
-WEB APP [https://github.com/xlincw0w/Steam_bot_showcase](https://github.com/xlincw0w/Steam_bot_showcase)
+Web APP [https://github.com/xlincw0w/Steam_bot_showcase](https://github.com/xlincw0w/Steam_bot_showcase)
