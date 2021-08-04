@@ -79,4 +79,4 @@ Khaled Khazem - khaled.khazem@yahoo.com
 <br />
 Yanis Haned - anishaned@outlook.com
 
-Project Link: [https://github.com/xlincw0w/Univerline](https://github.com/xlincw0w/Univerline)
+Project Link: [https://github.com/xlincw0w/Univerline](https://github.com/xlincw0w/Steam_bot_receptionist)
