@@ -35,7 +35,6 @@ Made with [contributors-img](https://contrib.rocks).
   <p align="center">
     Steam bot that trades cryptocurrencies against inventory items using coinbase api
     <br />
-    <a href="https://univerline.herokuapp.com">View website</a>
   </p>
 </p>
 
