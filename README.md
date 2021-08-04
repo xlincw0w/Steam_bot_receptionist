@@ -76,6 +76,6 @@ Distributed under the MIT License.
 ## Contact
 
 Khaled Khazem - khaled.khazem@yahoo.com
-Yanis Haned
+Yanis Haned - anishaned@outlook.com
 
 Project Link: [https://github.com/xlincw0w/Univerline](https://github.com/xlincw0w/Univerline)
